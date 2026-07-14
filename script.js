@@ -1,59 +1,67 @@
-// ===== NAVIGATION =====
+// ===== NAVIGATION (homepage only) =====
 const header = document.getElementById('header');
 const hamburger = document.getElementById('hamburger');
 const navLinks = document.getElementById('navLinks');
 const navLinkItems = document.querySelectorAll('.nav-link');
 
-// Scroll handler for header
-function handleScroll() {
-  if (window.scrollY > 50) {
-    header.classList.add('scrolled');
-  } else {
-    header.classList.remove('scrolled');
+if (header) {
+  // Scroll handler for header
+  function handleScroll() {
+    if (window.scrollY > 50) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
   }
-}
 
-window.addEventListener('scroll', handleScroll);
-handleScroll();
+  window.addEventListener('scroll', handleScroll);
+  handleScroll();
+}
 
 // Mobile menu toggle
-hamburger.addEventListener('click', () => {
-  hamburger.classList.toggle('active');
-  navLinks.classList.toggle('open');
-  document.body.style.overflow = navLinks.classList.contains('open') ? 'hidden' : '';
-});
-
-// Close mobile menu on link click
-navLinkItems.forEach(link => {
-  link.addEventListener('click', () => {
-    hamburger.classList.remove('active');
-    navLinks.classList.remove('open');
-    document.body.style.overflow = '';
-  });
-});
-
-// Active nav link on scroll
-function updateActiveNav() {
-  const sections = document.querySelectorAll('section[id]');
-  const scrollPos = window.scrollY + 120;
-
-  sections.forEach(section => {
-    const top = section.offsetTop;
-    const height = section.offsetHeight;
-    const id = section.getAttribute('id');
-
-    if (scrollPos >= top && scrollPos < top + height) {
-      navLinkItems.forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('href') === `#${id}`) {
-          link.classList.add('active');
-        }
-      });
-    }
+if (hamburger) {
+  hamburger.addEventListener('click', () => {
+    hamburger.classList.toggle('active');
+    navLinks.classList.toggle('open');
+    document.body.style.overflow = navLinks.classList.contains('open') ? 'hidden' : '';
   });
 }
 
-window.addEventListener('scroll', updateActiveNav);
+// Close mobile menu on link click
+if (navLinkItems.length) {
+  navLinkItems.forEach(link => {
+    link.addEventListener('click', () => {
+      if (hamburger) hamburger.classList.remove('active');
+      if (navLinks) navLinks.classList.remove('open');
+      document.body.style.overflow = '';
+    });
+  });
+}
+
+// Active nav link on scroll
+if (header) {
+  function updateActiveNav() {
+    const sections = document.querySelectorAll('section[id]');
+    const scrollPos = window.scrollY + 120;
+
+    sections.forEach(section => {
+      const top = section.offsetTop;
+      const height = section.offsetHeight;
+      const id = section.getAttribute('id');
+
+      if (scrollPos >= top && scrollPos < top + height) {
+        navLinkItems.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === `#${id}`) {
+            link.classList.add('active');
+          }
+        });
+      }
+    });
+  }
+
+  window.addEventListener('scroll', updateActiveNav);
+}
 
 // ===== HERO STATS COUNTER =====
 function animateCounters() {
@@ -93,83 +101,85 @@ if (heroStats) {
   statsObserver.observe(heroStats);
 }
 
-// ===== SERVICE TABS =====
+// ===== SERVICE TABS (homepage only) =====
 const tabBtns = document.querySelectorAll('.tab-btn');
 const tabContents = document.querySelectorAll('.tab-content');
 
-tabBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    const tab = btn.getAttribute('data-tab');
-
-    tabBtns.forEach(b => b.classList.remove('active'));
-    tabContents.forEach(c => c.classList.remove('active'));
-
-    btn.classList.add('active');
-    document.getElementById(`tab-${tab}`).classList.add('active');
+if (tabBtns.length) {
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.getAttribute('data-tab');
+      tabBtns.forEach(b => b.classList.remove('active'));
+      tabContents.forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(`tab-${tab}`).classList.add('active');
+    });
   });
-});
+}
 
-// ===== CONTACT FORM =====
+// ===== CONTACT FORM (homepage only) =====
 const contactForm = document.getElementById('contactForm');
 
-contactForm.addEventListener('submit', (e) => {
-  e.preventDefault();
+if (contactForm) {
+  contactForm.addEventListener('submit', (e) => {
+    e.preventDefault();
 
-  const formData = new FormData(contactForm);
-  const data = Object.fromEntries(formData.entries());
+    const formData = new FormData(contactForm);
+    const data = Object.fromEntries(formData.entries());
 
-  // Validate
-  if (!data.name || !data.email || !data.subject || !data.message) {
-    showNotification('Please fill in all required fields.', 'error');
-    return;
-  }
+    if (!data.name || !data.email || !data.subject || !data.message) {
+      showNotification('Please fill in all required fields.', 'error');
+      return;
+    }
 
-  // Simulate submission
-  const submitBtn = contactForm.querySelector('button[type="submit"]');
-  const originalText = submitBtn.innerHTML;
-  submitBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><circle cx="12" cy="12" r="10"/></svg> Sending...';
-  submitBtn.disabled = true;
-
-  setTimeout(() => {
-    submitBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Message Sent!';
-    submitBtn.style.background = '#16a34a';
-
-    showNotification('Thank you! Your message has been sent. We will get back to you shortly.', 'success');
+    const submitBtn = contactForm.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><circle cx="12" cy="12" r="10"/></svg> Sending...';
+    submitBtn.disabled = true;
 
     setTimeout(() => {
-      contactForm.reset();
-      submitBtn.innerHTML = originalText;
-      submitBtn.disabled = false;
-      submitBtn.style.background = '';
-    }, 3000);
-  }, 1500);
-});
+      submitBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Message Sent!';
+      submitBtn.style.background = '#16a34a';
 
-// ===== NEWSLETTER FORM =====
+      showNotification('Thank you! Your message has been sent. We will get back to you shortly.', 'success');
+
+      setTimeout(() => {
+        contactForm.reset();
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        submitBtn.style.background = '';
+      }, 3000);
+    }, 1500);
+  });
+}
+
+// ===== NEWSLETTER FORM (homepage only) =====
 const newsletterForm = document.getElementById('newsletterForm');
 
-newsletterForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const input = newsletterForm.querySelector('input');
-  const email = input.value.trim();
+if (newsletterForm) {
+  newsletterForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const input = newsletterForm.querySelector('input');
+    const email = input.value.trim();
 
-  if (!email || !isValidEmail(email)) {
-    showNotification('Please enter a valid email address.', 'error');
-    return;
-  }
+    if (!email || !isValidEmail(email)) {
+      showNotification('Please enter a valid email address.', 'error');
+      return;
+    }
 
-  const btn = newsletterForm.querySelector('button');
-  btn.textContent = 'Subscribed!';
-  btn.style.background = '#16a34a';
+    const btn = newsletterForm.querySelector('button');
+    btn.textContent = 'Subscribed!';
+    btn.style.background = '#16a34a';
 
-  showNotification('You have been subscribed to PPAU SACCO newsletter!', 'success');
+    showNotification('You have been subscribed to PPAU SACCO newsletter!', 'success');
 
-  setTimeout(() => {
-    input.value = '';
-    btn.textContent = 'Subscribe';
-    btn.style.background = '';
-  }, 3000);
-});
+    setTimeout(() => {
+      input.value = '';
+      btn.textContent = 'Subscribe';
+      btn.style.background = '';
+    }, 3000);
+  });
+}
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -290,17 +300,19 @@ fadeElements.forEach(el => fadeObserver.observe(el));
 // ===== BACK TO TOP =====
 const backToTop = document.getElementById('backToTop');
 
-window.addEventListener('scroll', () => {
-  if (window.scrollY > 500) {
-    backToTop.classList.add('visible');
-  } else {
-    backToTop.classList.remove('visible');
-  }
-});
+if (backToTop) {
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 500) {
+      backToTop.classList.add('visible');
+    } else {
+      backToTop.classList.remove('visible');
+    }
+  });
 
-backToTop.addEventListener('click', () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-});
+  backToTop.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+}
 
 // ===== HERO PARTICLES =====
 function createParticles() {

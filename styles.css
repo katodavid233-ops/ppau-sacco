@@ -176,6 +176,13 @@ img {
   gap: 12px;
 }
 
+.logo-img {
+  height: 44px;
+  width: auto;
+  border-radius: var(--radius-sm);
+  object-fit: contain;
+}
+
 .logo-icon {
   width: 44px;
   height: 44px;

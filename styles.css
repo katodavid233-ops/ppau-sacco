@@ -59,7 +59,7 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 80px;
-  font-size: 18px;
+  font-size: clamp(14px, 1.1vw + 0.5rem, 18px);
 }
 
 body {
@@ -98,7 +98,7 @@ img {
   padding: 12px 28px;
   border-radius: var(--radius-full);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   border: none;
   cursor: pointer;
   transition: var(--transition);
@@ -131,12 +131,12 @@ img {
 
 .btn-lg {
   padding: 16px 36px;
-  font-size: 1.05rem;
+  font-size: clamp(0.95rem, 1vw + 0.35rem, 1.15rem);
 }
 
 .btn-sm {
   padding: 10px 20px;
-  font-size: 0.85rem;
+  font-size: clamp(0.8rem, 0.9vw + 0.3rem, 0.95rem);
 }
 
 .btn-full {
@@ -197,13 +197,13 @@ img {
 
 .logo-name {
   font-weight: 800;
-  font-size: 1.1rem;
+  font-size: clamp(0.95rem, 1vw + 0.4rem, 1.15rem);
   color: var(--white);
   line-height: 1.2;
 }
 
 .logo-tagline {
-  font-size: 0.85rem;
+  font-size: clamp(0.7rem, 0.8vw + 0.3rem, 0.85rem);
   opacity: 0.85;
   color: var(--white);
   font-weight: 500;
@@ -226,7 +226,7 @@ img {
 .nav-link {
   padding: 8px 16px;
   border-radius: var(--radius-full);
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   font-weight: 500;
   color: rgba(255, 255, 255, 0.85);
   transition: var(--transition);
@@ -255,7 +255,7 @@ img {
   color: var(--white) !important;
   border-radius: var(--radius-full);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   transition: var(--transition);
 }
 
@@ -341,7 +341,7 @@ img {
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: var(--radius-full);
   color: var(--white);
-  font-size: 1rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   font-weight: 600;
   margin-bottom: 24px;
   backdrop-filter: blur(10px);
@@ -364,7 +364,7 @@ img {
 }
 
 .hero-subtitle {
-  font-size: 1.3rem;
+  font-size: clamp(1rem, 1.2vw + 0.4rem, 1.35rem);
   color: rgba(255, 255, 255, 0.9);
   max-width: 650px;
   margin: 0 auto 32px;
@@ -395,18 +395,18 @@ img {
 }
 
 .stat-number {
-  font-size: 2.8rem;
+  font-size: clamp(2rem, 2.5vw + 0.5rem, 2.8rem);
   font-weight: 800;
   line-height: 1;
 }
 
 .stat-plus {
-  font-size: 1.5rem;
+  font-size: clamp(1.3rem, 1.4vw + 0.4rem, 1.6rem);
   font-weight: 700;
 }
 
 .stat-label {
-  font-size: 0.95rem;
+  font-size: clamp(0.8rem, 0.9vw + 0.3rem, 0.95rem);
   opacity: 0.85;
   margin-top: 4px;
 }
@@ -431,7 +431,7 @@ img {
   align-items: center;
   gap: 8px;
   color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9rem;
+  font-size: clamp(0.8rem, 0.9vw + 0.3rem, 0.95rem);
   transition: var(--transition);
 }
 
@@ -482,7 +482,7 @@ img {
   background: var(--green-100);
   color: var(--green-800);
   border-radius: var(--radius-full);
-  font-size: 0.9rem;
+  font-size: clamp(0.8rem, 0.9vw + 0.3rem, 0.95rem);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -499,7 +499,7 @@ img {
 
 .section-header p {
   color: var(--gray-600);
-  font-size: 1.1rem;
+  font-size: clamp(0.95rem, 1vw + 0.35rem, 1.15rem);
   max-width: 550px;
   margin: 0 auto;
 }
@@ -513,7 +513,7 @@ img {
 }
 
 .about-content h3 {
-  font-size: 1.6rem;
+  font-size: clamp(1.3rem, 1.5vw + 0.4rem, 1.7rem);
   font-weight: 700;
   color: var(--gray-900);
   margin-bottom: 16px;
@@ -552,14 +552,14 @@ img {
 }
 
 .about-feature h4 {
-  font-size: 1rem;
+  font-size: clamp(0.9rem, 1vw + 0.35rem, 1.05rem);
   font-weight: 700;
   color: var(--gray-900);
   margin-bottom: 4px;
 }
 
 .about-feature p {
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   color: var(--gray-600);
   margin-bottom: 0;
   line-height: 1.5;
@@ -587,14 +587,14 @@ img {
 }
 
 .mission-card h4 {
-  font-size: 1.1rem;
+  font-size: clamp(1rem, 1.1vw + 0.35rem, 1.15rem);
   font-weight: 700;
   color: var(--gray-900);
   margin-bottom: 10px;
 }
 
 .mission-card p {
-  font-size: 0.9rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   color: var(--gray-600);
   line-height: 1.6;
 }
@@ -614,7 +614,7 @@ img {
   background: var(--green-50);
   color: var(--green-800);
   border-radius: var(--radius-full);
-  font-size: 0.9rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   font-weight: 600;
   border: 1px solid var(--green-100);
 }
@@ -635,7 +635,7 @@ img {
   background: var(--white);
   color: var(--gray-600);
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   cursor: pointer;
   transition: var(--transition);
   font-family: inherit;
@@ -718,7 +718,7 @@ img {
 }
 
 .service-card h3 {
-  font-size: 1.2rem;
+  font-size: clamp(1rem, 1.1vw + 0.35rem, 1.25rem);
   font-weight: 700;
   color: var(--gray-900);
   margin-bottom: 10px;
@@ -726,7 +726,7 @@ img {
 
 .service-card p {
   color: var(--gray-600);
-  font-size: 1rem;
+  font-size: clamp(0.9rem, 1vw + 0.35rem, 1.05rem);
   line-height: 1.6;
   margin-bottom: 16px;
 }
@@ -741,7 +741,7 @@ img {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   color: var(--gray-700);
   padding-left: 16px;
   position: relative;
@@ -786,7 +786,7 @@ img {
 }
 
 .membership-header h3 {
-  font-size: 1.2rem;
+  font-size: clamp(1rem, 1.2vw + 0.35rem, 1.3rem);
   font-weight: 700;
   color: var(--gray-900);
 }
@@ -801,7 +801,7 @@ img {
   gap: 12px;
   padding: 10px 0;
   border-bottom: 1px solid var(--gray-50, #f9fafb);
-  font-size: 0.9rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   color: var(--gray-700);
 }
 
@@ -831,7 +831,7 @@ img {
 }
 
 .membership-cta h3 {
-  font-size: 1.5rem;
+  font-size: clamp(1.3rem, 1.4vw + 0.4rem, 1.6rem);
   font-weight: 700;
   margin-bottom: 12px;
 }
@@ -890,13 +890,13 @@ img {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.3rem;
+  font-size: clamp(1.1rem, 1.2vw + 0.35rem, 1.4rem);
   font-weight: 700;
   margin: 0 auto;
 }
 
 .leader-card h4 {
-  font-size: 1.05rem;
+  font-size: clamp(0.9rem, 1vw + 0.35rem, 1.15rem);
   font-weight: 700;
   color: var(--gray-900);
   margin-bottom: 4px;
@@ -904,14 +904,14 @@ img {
 
 .leader-role {
   display: inline-block;
-  font-size: 0.9rem;
+  font-size: clamp(0.8rem, 0.9vw + 0.3rem, 0.95rem);
   color: var(--green-700);
   font-weight: 600;
   margin-bottom: 10px;
 }
 
 .leader-card p {
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   color: var(--gray-600);
   line-height: 1.5;
 }
@@ -961,7 +961,7 @@ img {
   background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(10px);
   color: var(--white);
-  font-size: 0.85rem;
+  font-size: clamp(0.75rem, 0.8vw + 0.3rem, 0.9rem);
   font-weight: 600;
   border-radius: var(--radius-full);
 }
@@ -976,13 +976,13 @@ img {
   background: var(--green-100);
   color: var(--green-800);
   border-radius: var(--radius-full);
-  font-size: 0.85rem;
+  font-size: clamp(0.75rem, 0.8vw + 0.3rem, 0.9rem);
   font-weight: 600;
   margin-bottom: 10px;
 }
 
 .news-content h3 {
-  font-size: 1.1rem;
+  font-size: clamp(0.95rem, 1.1vw + 0.35rem, 1.2rem);
   font-weight: 700;
   color: var(--gray-900);
   margin-bottom: 10px;
@@ -990,11 +990,11 @@ img {
 }
 
 .news-card.featured .news-content h3 {
-  font-size: 1.3rem;
+  font-size: clamp(1.1rem, 1.2vw + 0.4rem, 1.4rem);
 }
 
 .news-content p {
-  font-size: 1rem;
+  font-size: clamp(0.85rem, 1vw + 0.35rem, 1.05rem);
   color: var(--gray-600);
   line-height: 1.6;
   margin-bottom: 12px;
@@ -1002,7 +1002,7 @@ img {
 
 .news-link {
   display: inline-block;
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   font-weight: 600;
   color: var(--green-800);
   transition: var(--transition);
@@ -1040,14 +1040,14 @@ img {
 }
 
 .contact-item h4 {
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   font-weight: 700;
   color: var(--gray-900);
   margin-bottom: 4px;
 }
 
 .contact-item p {
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   color: var(--gray-600);
   line-height: 1.6;
 }
@@ -1072,7 +1072,7 @@ img {
 
 .form-group label {
   display: block;
-  font-size: 0.85rem;
+  font-size: clamp(0.8rem, 0.9vw + 0.3rem, 0.95rem);
   font-weight: 600;
   color: var(--gray-700);
   margin-bottom: 6px;
@@ -1086,7 +1086,7 @@ img {
   border: 2px solid var(--gray-200);
   border-radius: var(--radius);
   font-family: inherit;
-  font-size: 0.9rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   color: var(--gray-800);
   background: var(--gray-50);
   transition: var(--transition);
@@ -1131,7 +1131,7 @@ img {
 
 .footer-about p {
   margin-top: 16px;
-  font-size: 0.9rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   line-height: 1.7;
   color: var(--gray-300);
 }
@@ -1171,7 +1171,7 @@ img {
 .footer-links h4,
 .footer-newsletter h4 {
   color: var(--white);
-  font-size: 1.05rem;
+  font-size: clamp(0.95rem, 1vw + 0.35rem, 1.15rem);
   font-weight: 700;
   margin-bottom: 20px;
 }
@@ -1181,7 +1181,7 @@ img {
 }
 
 .footer-links ul a {
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   color: var(--gray-300);
   transition: var(--transition);
 }
@@ -1192,7 +1192,7 @@ img {
 }
 
 .footer-newsletter p {
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   line-height: 1.6;
   margin-bottom: 16px;
 }
@@ -1210,7 +1210,7 @@ img {
   background: rgba(255, 255, 255, 0.05);
   color: var(--white);
   font-family: inherit;
-  font-size: 0.85rem;
+  font-size: clamp(0.8rem, 0.9vw + 0.3rem, 0.95rem);
 }
 
 .newsletter-form input::placeholder {
@@ -1237,7 +1237,7 @@ img {
 }
 
 .footer-bottom p {
-  font-size: 0.9rem;
+  font-size: clamp(0.8rem, 0.9vw + 0.3rem, 0.95rem);
 }
 
 .footer-bottom-links {
@@ -1246,7 +1246,7 @@ img {
 }
 
 .footer-bottom-links a {
-  font-size: 0.9rem;
+  font-size: clamp(0.8rem, 0.9vw + 0.3rem, 0.95rem);
   color: var(--gray-300);
   transition: var(--transition);
 }
@@ -1379,7 +1379,7 @@ img {
   }
 
   .stat-number {
-    font-size: 1.8rem;
+    font-size: clamp(1.5rem, 1.8vw + 0.5rem, 2rem);
   }
 
   .section {
@@ -1465,7 +1465,7 @@ img {
 .portal-nav-link {
   padding: 8px 16px;
   border-radius: var(--radius-full);
-  font-size: 0.9rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   font-weight: 500;
   color: var(--gray-600);
   transition: var(--transition);
@@ -1549,7 +1549,7 @@ img {
 }
 
 .portal-auth-sidebar h2 {
-  font-size: 1.8rem;
+  font-size: clamp(1.5rem, 1.8vw + 0.5rem, 2rem);
   font-weight: 800;
   line-height: 1.2;
   margin-bottom: 12px;
@@ -1557,7 +1557,7 @@ img {
 
 .portal-auth-sidebar p {
   opacity: 0.8;
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   line-height: 1.6;
   margin-bottom: 32px;
 }
@@ -1572,7 +1572,7 @@ img {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 0.9rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   opacity: 0.9;
 }
 
@@ -1607,7 +1607,7 @@ img {
 }
 
 .auth-form-header h2 {
-  font-size: 1.8rem;
+  font-size: clamp(1.5rem, 1.8vw + 0.5rem, 2rem);
   font-weight: 800;
   color: var(--gray-900);
   margin-bottom: 8px;
@@ -1615,7 +1615,7 @@ img {
 
 .auth-form-header p {
   color: var(--gray-500);
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
 }
 
 .auth-form .form-group {
@@ -1670,7 +1670,7 @@ img {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.85rem;
+  font-size: clamp(0.8rem, 0.9vw + 0.3rem, 0.95rem);
   color: var(--gray-600);
   cursor: pointer;
 }
@@ -1684,7 +1684,7 @@ img {
 .form-link {
   color: var(--green-800);
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: clamp(0.8rem, 0.9vw + 0.3rem, 0.95rem);
 }
 
 .form-link:hover {
@@ -1697,7 +1697,7 @@ img {
 }
 
 .auth-form-footer p {
-  font-size: 0.9rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   color: var(--gray-500);
 }
 
@@ -1705,7 +1705,7 @@ img {
   padding: 12px 28px;
   border-radius: var(--radius-full);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   border: 2px solid var(--gray-300);
   background: var(--white);
   color: var(--gray-700);
@@ -1734,7 +1734,7 @@ img {
 }
 
 .step-title {
-  font-size: 1.1rem;
+  font-size: clamp(0.95rem, 1.1vw + 0.35rem, 1.2rem);
   font-weight: 700;
   color: var(--gray-900);
   margin-bottom: 20px;
@@ -1808,7 +1808,7 @@ img {
 }
 
 .strength-text {
-  font-size: 0.75rem;
+  font-size: clamp(0.7rem, 0.75vw + 0.25rem, 0.85rem);
   color: var(--gray-500);
 }
 
@@ -1832,20 +1832,20 @@ img {
 
 .payment-summary-item .label {
   display: block;
-  font-size: 0.75rem;
+  font-size: clamp(0.7rem, 0.75vw + 0.25rem, 0.85rem);
   color: var(--gray-500);
   margin-bottom: 4px;
 }
 
 .payment-summary-item .value {
   font-weight: 700;
-  font-size: 1rem;
+  font-size: clamp(0.9rem, 1vw + 0.35rem, 1.1rem);
   color: var(--gray-900);
 }
 
 .payment-summary-item.total .value {
   color: var(--green-800);
-  font-size: 1.2rem;
+  font-size: clamp(1rem, 1.2vw + 0.35rem, 1.3rem);
 }
 
 .payment-summary-divider {
@@ -1855,7 +1855,7 @@ img {
 }
 
 .payment-methods h4 {
-  font-size: 1rem;
+  font-size: clamp(0.9rem, 1vw + 0.35rem, 1.1rem);
   font-weight: 700;
   color: var(--gray-900);
   margin-bottom: 16px;
@@ -1912,14 +1912,14 @@ img {
 }
 
 .payment-method-info h4 {
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   font-weight: 700;
   color: var(--gray-900);
   margin-bottom: 2px;
 }
 
 .payment-method-info p {
-  font-size: 0.8rem;
+  font-size: clamp(0.75rem, 0.8vw + 0.25rem, 0.9rem);
   color: var(--gray-500);
 }
 
@@ -1977,7 +1977,7 @@ img {
 
 .bank-label {
   display: block;
-  font-size: 0.7rem;
+  font-size: clamp(0.65rem, 0.7vw + 0.25rem, 0.8rem);
   color: var(--gray-500);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -1986,13 +1986,13 @@ img {
 
 .bank-value {
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   color: var(--gray-900);
 }
 
 .account-number {
   font-family: 'Courier New', monospace;
-  font-size: 1.1rem;
+  font-size: clamp(0.95rem, 1.1vw + 0.35rem, 1.2rem);
   color: var(--blue-700);
 }
 
@@ -2015,13 +2015,13 @@ img {
 .mm-label {
   display: block;
   width: 100%;
-  font-size: 0.75rem;
+  font-size: clamp(0.7rem, 0.75vw + 0.25rem, 0.85rem);
   color: var(--gray-500);
   margin-bottom: 4px;
 }
 
 .mm-number {
-  font-size: 1.4rem;
+  font-size: clamp(1.2rem, 1.3vw + 0.4rem, 1.5rem);
   font-weight: 800;
   color: var(--gray-900);
   font-family: 'Courier New', monospace;
@@ -2038,7 +2038,7 @@ img {
   color: var(--white);
   border: none;
   border-radius: var(--radius-full);
-  font-size: 0.75rem;
+  font-size: clamp(0.7rem, 0.75vw + 0.25rem, 0.85rem);
   font-weight: 600;
   cursor: pointer;
   transition: var(--transition);
@@ -2062,7 +2062,7 @@ img {
 .mm-detail {
   display: flex;
   justify-content: space-between;
-  font-size: 0.85rem;
+  font-size: clamp(0.8rem, 0.9vw + 0.3rem, 0.95rem);
   color: var(--gray-600);
   padding: 4px 0;
 }
@@ -2077,7 +2077,7 @@ img {
 }
 
 .payment-instructions h5 {
-  font-size: 0.85rem;
+  font-size: clamp(0.8rem, 0.9vw + 0.3rem, 0.95rem);
   font-weight: 700;
   color: var(--gray-900);
   margin-bottom: 10px;
@@ -2092,7 +2092,7 @@ img {
   counter-increment: step;
   padding: 8px 0 8px 32px;
   position: relative;
-  font-size: 0.85rem;
+  font-size: clamp(0.8rem, 0.9vw + 0.3rem, 0.95rem);
   color: var(--gray-600);
   line-height: 1.5;
   border-bottom: 1px solid var(--gray-50);
@@ -2111,7 +2111,7 @@ img {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.7rem;
+  font-size: clamp(0.65rem, 0.7vw + 0.2rem, 0.8rem);
   font-weight: 700;
 }
 
@@ -2125,7 +2125,7 @@ img {
 }
 
 .momo-pay-option p {
-  font-size: 0.85rem;
+  font-size: clamp(0.8rem, 0.9vw + 0.3rem, 0.95rem);
   color: var(--gray-700);
   line-height: 1.5;
 }
@@ -2150,7 +2150,7 @@ img {
 }
 
 .qr-box span {
-  font-size: 0.65rem;
+  font-size: clamp(0.6rem, 0.65vw + 0.2rem, 0.75rem);
   color: var(--gray-500);
   font-weight: 600;
 }
@@ -2188,14 +2188,14 @@ img {
 }
 
 .upload-area span {
-  font-size: 0.9rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   font-weight: 600;
   color: var(--gray-700);
   margin-bottom: 4px;
 }
 
 .upload-area small {
-  font-size: 0.75rem;
+  font-size: clamp(0.7rem, 0.75vw + 0.25rem, 0.85rem);
   color: var(--gray-400);
 }
 
@@ -2221,7 +2221,7 @@ img {
 .card-brand {
   padding: 6px 14px;
   border-radius: var(--radius);
-  font-size: 0.75rem;
+  font-size: clamp(0.7rem, 0.75vw + 0.25rem, 0.85rem);
   font-weight: 800;
   letter-spacing: 1px;
 }
@@ -2237,7 +2237,7 @@ img {
   padding: 10px 16px;
   background: var(--green-50);
   border-radius: var(--radius-full);
-  font-size: 0.8rem;
+  font-size: clamp(0.75rem, 0.8vw + 0.25rem, 0.9rem);
   color: var(--green-800);
   font-weight: 600;
   margin-bottom: 20px;
@@ -2245,7 +2245,7 @@ img {
 }
 
 .card-note {
-  font-size: 0.75rem;
+  font-size: clamp(0.7rem, 0.75vw + 0.25rem, 0.85rem);
   color: var(--gray-400);
   text-align: center;
   margin-top: 12px;
@@ -2265,7 +2265,7 @@ img {
 }
 
 .payment-note {
-  font-size: 0.8rem;
+  font-size: clamp(0.75rem, 0.8vw + 0.25rem, 0.9rem);
   color: var(--gray-500);
   margin-top: 12px;
 }
@@ -2306,13 +2306,13 @@ img {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.3rem;
+  font-size: clamp(1.1rem, 1.2vw + 0.35rem, 1.4rem);
   font-weight: 700;
   margin: 0 auto 12px;
 }
 
 .sidebar-profile h4 {
-  font-size: 1rem;
+  font-size: clamp(0.9rem, 1vw + 0.35rem, 1.1rem);
   font-weight: 700;
   color: var(--gray-900);
   margin-bottom: 4px;
@@ -2320,7 +2320,7 @@ img {
 
 .member-id {
   display: block;
-  font-size: 0.75rem;
+  font-size: clamp(0.7rem, 0.75vw + 0.25rem, 0.85rem);
   color: var(--gray-500);
   font-family: 'Courier New', monospace;
   margin-bottom: 8px;
@@ -2330,7 +2330,7 @@ img {
   display: inline-block;
   padding: 4px 12px;
   border-radius: var(--radius-full);
-  font-size: 0.7rem;
+  font-size: clamp(0.65rem, 0.7vw + 0.2rem, 0.8rem);
   font-weight: 600;
 }
 
@@ -2353,7 +2353,7 @@ img {
   gap: 12px;
   padding: 12px 16px;
   border-radius: var(--radius);
-  font-size: 0.9rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
   font-weight: 500;
   color: var(--gray-600);
   transition: var(--transition);
@@ -2400,7 +2400,7 @@ img {
 }
 
 .dash-header h2 {
-  font-size: 1.6rem;
+  font-size: clamp(1.3rem, 1.5vw + 0.4rem, 1.7rem);
   font-weight: 800;
   color: var(--gray-900);
   margin-bottom: 4px;
@@ -2408,7 +2408,7 @@ img {
 
 .dash-header p {
   color: var(--gray-500);
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
 }
 
 .dash-cards {
@@ -2449,21 +2449,21 @@ img {
 
 .dash-card-label {
   display: block;
-  font-size: 0.8rem;
+  font-size: clamp(0.75rem, 0.8vw + 0.25rem, 0.9rem);
   color: var(--gray-500);
   margin-bottom: 6px;
 }
 
 .dash-card-value {
   display: block;
-  font-size: 1.4rem;
+  font-size: clamp(1.2rem, 1.3vw + 0.4rem, 1.5rem);
   font-weight: 800;
   color: var(--gray-900);
   margin-bottom: 4px;
 }
 
 .dash-card-change {
-  font-size: 0.75rem;
+  font-size: clamp(0.7rem, 0.75vw + 0.25rem, 0.85rem);
   color: var(--gray-500);
 }
 
@@ -2479,7 +2479,7 @@ img {
 }
 
 .dash-section h3 {
-  font-size: 1.1rem;
+  font-size: clamp(0.95rem, 1.1vw + 0.35rem, 1.2rem);
   font-weight: 700;
   color: var(--gray-900);
   margin-bottom: 16px;
@@ -2498,14 +2498,14 @@ img {
 .dash-table td {
   padding: 12px 16px;
   text-align: left;
-  font-size: 0.85rem;
+  font-size: clamp(0.8rem, 0.9vw + 0.3rem, 0.95rem);
   border-bottom: 1px solid var(--gray-100);
 }
 
 .dash-table th {
   color: var(--gray-500);
   font-weight: 600;
-  font-size: 0.75rem;
+  font-size: clamp(0.7rem, 0.75vw + 0.25rem, 0.85rem);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -2521,7 +2521,7 @@ img {
   display: inline-block;
   padding: 4px 10px;
   border-radius: var(--radius-full);
-  font-size: 0.7rem;
+  font-size: clamp(0.65rem, 0.7vw + 0.2rem, 0.8rem);
   font-weight: 600;
 }
 
@@ -2545,7 +2545,7 @@ img {
 }
 
 .loan-apply-card h3 {
-  font-size: 1.1rem;
+  font-size: clamp(0.95rem, 1.1vw + 0.35rem, 1.2rem);
   font-weight: 700;
   color: var(--gray-900);
   margin-bottom: 10px;
@@ -2554,7 +2554,7 @@ img {
 .loan-apply-card p {
   color: var(--gray-500);
   margin-bottom: 20px;
-  font-size: 0.9rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
 }
 
 /* Settings */
@@ -2566,7 +2566,7 @@ img {
 }
 
 .settings-card h3 {
-  font-size: 1.1rem;
+  font-size: clamp(0.95rem, 1.1vw + 0.35rem, 1.2rem);
   font-weight: 700;
   color: var(--gray-900);
   margin-bottom: 20px;
@@ -2640,7 +2640,7 @@ img {
   .sidebar-link {
     white-space: nowrap;
     padding: 10px 16px;
-    font-size: 0.8rem;
+    font-size: clamp(0.75rem, 0.8vw + 0.25rem, 0.9rem);
   }
 
   .sidebar-logout {

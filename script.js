@@ -638,16 +638,21 @@ function nextFormStep() {
   if (currentStep >= totalSteps) return;
 
   const currentStepEl = document.querySelector(`.form-step[data-step="${currentStep}"]`);
-  if (!currentStepEl) return;
+  if (!currentStepEl) {
+    console.error('Could not find form step', currentStep);
+    return;
+  }
 
   const requiredInputs = currentStepEl.querySelectorAll('[required]');
   let valid = true;
   let firstEmpty = null;
+  const emptyFields = [];
 
   requiredInputs.forEach(input => {
     const val = input.tagName === 'SELECT' ? input.value : input.value.trim();
     if (!val) {
       valid = false;
+      emptyFields.push(input.id || input.name || 'unknown');
       input.style.borderColor = '#dc2626';
       input.style.animation = 'shake 0.4s ease';
       setTimeout(() => { input.style.borderColor = ''; input.style.animation = ''; }, 2500);
@@ -656,6 +661,7 @@ function nextFormStep() {
   });
 
   if (!valid) {
+    console.log('Validation failed. Empty fields:', emptyFields);
     showPortalNotification('Please fill in all required fields (marked with *).', 'error');
     if (firstEmpty) firstEmpty.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
@@ -673,6 +679,7 @@ function nextFormStep() {
   }
 
   currentStep++;
+  console.log('Advancing to step', currentStep);
   updateFormSteps();
 }
 
@@ -687,7 +694,12 @@ function updateFormSteps() {
   document.querySelectorAll('.form-step').forEach(step => {
     step.classList.remove('active');
   });
-  document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.add('active');
+  const nextStepEl = document.querySelector(`.form-step[data-step="${currentStep}"]`);
+  if (nextStepEl) {
+    nextStepEl.classList.add('active');
+  } else {
+    console.error('Could not find step element for step', currentStep);
+  }
 
   // Update dots
   document.querySelectorAll('.step-dot').forEach(dot => {

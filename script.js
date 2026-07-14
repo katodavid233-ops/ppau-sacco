@@ -628,17 +628,21 @@ function nextFormStep() {
   const currentStepEl = document.querySelector(`.form-step[data-step="${currentStep}"]`);
   const requiredInputs = currentStepEl.querySelectorAll('[required]');
   let valid = true;
+  let firstEmpty = null;
 
   requiredInputs.forEach(input => {
     if (!input.value.trim()) {
       valid = false;
       input.style.borderColor = '#dc2626';
-      setTimeout(() => { input.style.borderColor = ''; }, 2000);
+      input.style.animation = 'shake 0.4s ease';
+      setTimeout(() => { input.style.borderColor = ''; input.style.animation = ''; }, 2500);
+      if (!firstEmpty) firstEmpty = input;
     }
   });
 
   if (!valid) {
-    showPortalNotification('Please fill in all required fields.', 'error');
+    showPortalNotification('Please fill in all required fields (marked with *).', 'error');
+    if (firstEmpty) firstEmpty.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
 
@@ -649,6 +653,7 @@ function nextFormStep() {
     if (pw && cpw && pw.value !== cpw.value) {
       showPortalNotification('Passwords do not match.', 'error');
       cpw.style.borderColor = '#dc2626';
+      cpw.style.animation = 'shake 0.4s ease';
       return;
     }
   }

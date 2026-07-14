@@ -414,6 +414,14 @@ function initPortal() {
   if (nextBtn) nextBtn.addEventListener('click', nextFormStep);
   if (prevBtn) prevBtn.addEventListener('click', prevFormStep);
 
+  // Prevent Enter key from submitting form before final step
+  registerForm.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && currentStep < totalSteps) {
+      e.preventDefault();
+      nextFormStep();
+    }
+  });
+
   // Password strength
   const regPassword = document.getElementById('regPassword');
   if (regPassword) {
@@ -450,6 +458,12 @@ function showPanel(panel) {
   registerPanel.classList.remove('active');
   paymentPanel.classList.remove('active');
   authSection.style.display = '';
+
+  // Reset form steps when showing register
+  if (panel === 'register') {
+    currentStep = 1;
+    updateFormSteps();
+  }
 
   // Update nav links
   document.querySelectorAll('.portal-nav-link').forEach(l => l.classList.remove('active'));
@@ -624,14 +638,16 @@ const totalSteps = 3;
 function nextFormStep() {
   if (currentStep >= totalSteps) return;
 
-  // Basic validation for current step
   const currentStepEl = document.querySelector(`.form-step[data-step="${currentStep}"]`);
+  if (!currentStepEl) return;
+
   const requiredInputs = currentStepEl.querySelectorAll('[required]');
   let valid = true;
   let firstEmpty = null;
 
   requiredInputs.forEach(input => {
-    if (!input.value.trim()) {
+    const val = input.tagName === 'SELECT' ? input.value : input.value.trim();
+    if (!val) {
       valid = false;
       input.style.borderColor = '#dc2626';
       input.style.animation = 'shake 0.4s ease';
@@ -646,7 +662,6 @@ function nextFormStep() {
     return;
   }
 
-  // Check password match on step 3
   if (currentStep === 2) {
     const pw = document.getElementById('regPassword');
     const cpw = document.getElementById('regConfirmPassword');

@@ -415,12 +415,14 @@ function initPortal() {
   if (prevBtn) prevBtn.addEventListener('click', prevFormStep);
 
   // Prevent Enter key from submitting form before final step
-  registerForm.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && currentStep < totalSteps) {
-      e.preventDefault();
-      nextFormStep();
-    }
-  });
+  if (registerForm) {
+    registerForm.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && currentStep < totalSteps) {
+        e.preventDefault();
+        nextFormStep();
+      }
+    });
+  }
 
   // Password strength
   const regPassword = document.getElementById('regPassword');
@@ -459,12 +461,6 @@ function showPanel(panel) {
   paymentPanel.classList.remove('active');
   authSection.style.display = '';
 
-  // Reset form steps when showing register
-  if (panel === 'register') {
-    currentStep = 1;
-    updateFormSteps();
-  }
-
   // Update nav links
   document.querySelectorAll('.portal-nav-link').forEach(l => l.classList.remove('active'));
 
@@ -474,6 +470,9 @@ function showPanel(panel) {
   } else if (panel === 'register') {
     registerPanel.classList.add('active');
     document.getElementById('navToRegister')?.classList.add('active');
+    // Reset form steps to step 1
+    currentStep = 1;
+    updateFormSteps();
   } else if (panel === 'payment') {
     paymentPanel.classList.add('active');
     document.getElementById('navToPayments')?.classList.add('active');

@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Member Portal | PPAU SACCO</title>
+  <meta name="description" content="PPAU SACCO Member Portal - Register, manage your account, and make payments." />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+</head>
+<body class="portal-body">
+  <!-- PORTAL NAV -->
+  <header class="portal-header">
+    <nav class="navbar">
+      <a href="index.html" class="logo">
+        <div class="logo-icon">PP</div>
+        <div class="logo-text">
+          <span class="logo-name" style="color:var(--gray-900)">PPAU SACCO</span>
+          <span class="logo-tagline" style="color:var(--gray-500)">Member Portal</span>
+        </div>
+      </a>
+      <div class="portal-nav-links">
+        <a href="index.html" class="portal-nav-link">Home</a>
+        <a href="#register" class="portal-nav-link active" id="navToRegister">Register</a>
+        <a href="#login" class="portal-nav-link" id="navToLogin">Login</a>
+        <a href="#payments" class="portal-nav-link" id="navToPayments" style="display:none">Payments</a>
+        <a href="#dashboard" class="portal-nav-link" id="navToDashboard" style="display:none">Dashboard</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- AUTH SECTION: REGISTER / LOGIN -->
+  <section class="portal-auth" id="authSection">
+    <div class="portal-auth-bg"></div>
+    <div class="portal-auth-container">
+      <!-- AUTH SIDEBAR -->
+      <div class="portal-auth-sidebar">
+        <div class="portal-auth-sidebar-content">
+          <div class="portal-auth-sidebar-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <h2>Welcome to<br/>PPAU SACCO Portal</h2>
+          <p>Join over 2,500 pharmacy professionals already saving and growing with us.</p>
+          <div class="portal-auth-features">
+            <div class="portal-auth-feature">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span>Secure & Regulated</span>
+            </div>
+            <div class="portal-auth-feature">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <span>Competitive Dividends</span>
+            </div>
+            <div class="portal-auth-feature">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              <span>Multiple Payment Options</span>
+            </div>
+            <div class="portal-auth-feature">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span>Quick Loan Approval</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AUTH FORMS -->
+      <div class="portal-auth-forms">
+        <!-- LOGIN FORM -->
+        <div class="auth-form-panel active" id="loginPanel">
+          <div class="auth-form-header">
+            <h2>Sign In</h2>
+            <p>Welcome back! Access your SACCO account.</p>
+          </div>
+          <form id="loginForm" class="auth-form">
+            <div class="form-group">
+              <label for="loginEmail">Email or Member ID</label>
+              <div class="input-with-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <input type="text" id="loginEmail" placeholder="e.g. PPAU-2024-001 or email" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="loginPassword">Password</label>
+              <div class="input-with-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <input type="password" id="loginPassword" placeholder="Enter your password" required />
+                <button type="button" class="toggle-password" onclick="togglePassword('loginPassword', this)">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="form-row-between">
+              <label class="checkbox-label">
+                <input type="checkbox" /> <span>Remember me</span>
+              </label>
+              <a href="#" class="form-link">Forgot password?</a>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full btn-lg">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+              Sign In to Portal
+            </button>
+          </form>
+          <div class="auth-form-footer">
+            <p>Not yet a member? <a href="#" onclick="showPanel('register')" class="form-link">Register Now</a></p>
+          </div>
+        </div>
+
+        <!-- REGISTER FORM -->
+        <div class="auth-form-panel" id="registerPanel">
+          <div class="auth-form-header">
+            <h2>Create Account</h2>
+            <p>Join PPAU SACCO and start your financial journey.</p>
+          </div>
+          <form id="registerForm" class="auth-form">
+            <div class="form-steps">
+              <div class="form-step active" data-step="1">
+                <h4 class="step-title">Personal Information</h4>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="regFirstName">First Name *</label>
+                    <input type="text" id="regFirstName" placeholder="First name" required />
+                  </div>
+                  <div class="form-group">
+                    <label for="regLastName">Last Name *</label>
+                    <input type="text" id="regLastName" placeholder="Last name" required />
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="regEmail">Email Address *</label>
+                    <input type="email" id="regEmail" placeholder="your@email.com" required />
+                  </div>
+                  <div class="form-group">
+                    <label for="regPhone">Phone Number *</label>
+                    <input type="tel" id="regPhone" placeholder="+256 700 000 000" required />
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="regGender">Gender *</label>
+                    <select id="regGender" required>
+                      <option value="" disabled selected>Select gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="regDob">Date of Birth *</label>
+                    <input type="date" id="regDob" required />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="regNin">National ID / NIN Number *</label>
+                  <input type="text" id="regNin" placeholder="CMXXXXXXXXX" required />
+                </div>
+              </div>
+
+              <div class="form-step" data-step="2">
+                <h4 class="step-title">Professional Details</h4>
+                <div class="form-group">
+                  <label for="regPharmacyLicense">Pharmacy Council License No. *</label>
+                  <input type="text" id="regPharmacyLicense" placeholder="e.g. NPC/REG/2024/001" required />
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="regPracticeType">Practice Type *</label>
+                    <select id="regPracticeType" required>
+                      <option value="" disabled selected>Select practice type</option>
+                      <option value="community">Community Pharmacy</option>
+                      <option value="hospital">Hospital Pharmacy</option>
+                      <option value="industrial">Industrial Pharmacy</option>
+                      <option value="academic">Academic / Research</option>
+                      <option value="government">Government (Minsiteries/MDA)</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="regEmployer">Employer / Pharmacy Name</label>
+                    <input type="text" id="regEmployer" placeholder="Where you practice" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="regLocation">Work Location (District) *</label>
+                  <input type="text" id="regLocation" placeholder="e.g. Kampala" required />
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="regSalary">Monthly Salary Range (UGX)</label>
+                    <select id="regSalary">
+                      <option value="" disabled selected>Select range</option>
+                      <option value="0-500000">Below 500,000</option>
+                      <option value="500000-1000000">500,000 - 1,000,000</option>
+                      <option value="1000000-3000000">1,000,000 - 3,000,000</option>
+                      <option value="3000000-5000000">3,000,000 - 5,000,000</option>
+                      <option value="5000000+">Above 5,000,000</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="regMemberType">Member Type *</label>
+                    <select id="regMemberType" required>
+                      <option value="" disabled selected>Select type</option>
+                      <option value="ordinary">Ordinary Member</option>
+                      <option value="student">Student Pharmacist</option>
+                      <option value="associate">Associate Member</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-step" data-step="3">
+                <h4 class="step-title">Account Setup</h4>
+                <div class="form-group">
+                  <label for="regPassword">Create Password *</label>
+                  <div class="input-with-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <input type="password" id="regPassword" placeholder="Min 8 characters" required minlength="8" />
+                    <button type="button" class="toggle-password" onclick="togglePassword('regPassword', this)">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                  </div>
+                  <div class="password-strength" id="passwordStrength">
+                    <div class="strength-bar"><div class="strength-fill"></div></div>
+                    <span class="strength-text">Password strength</span>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="regConfirmPassword">Confirm Password *</label>
+                  <div class="input-with-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <input type="password" id="regConfirmPassword" placeholder="Re-enter password" required />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="regNextOfKin">Next of Kin Name *</label>
+                  <input type="text" id="regNextOfKin" placeholder="Full name of next of kin" required />
+                </div>
+                <div class="form-group">
+                  <label for="regNextOfKinPhone">Next of Kin Phone *</label>
+                  <input type="tel" id="regNextOfKinPhone" placeholder="+256 700 000 000" required />
+                </div>
+                <div class="form-group">
+                  <label for="regMonthlyContribution">Preferred Monthly Contribution (UGX) *</label>
+                  <select id="regMonthlyContribution" required>
+                    <option value="" disabled selected>Select amount</option>
+                    <option value="20000">20,000</option>
+                    <option value="50000">50,000</option>
+                    <option value="100000">100,000</option>
+                    <option value="200000">200,000</option>
+                    <option value="500000">500,000</option>
+                  </select>
+                </div>
+                <div class="terms-check">
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="regTerms" required />
+                    <span>I agree to the <a href="#" class="form-link">Terms & Conditions</a>, <a href="#" class="form-link">Constitution</a>, and <a href="#" class="form-link">Privacy Policy</a> of PPAU SACCO</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-step-nav">
+              <div class="step-indicators">
+                <span class="step-dot active" data-step="1"></span>
+                <span class="step-dot" data-step="2"></span>
+                <span class="step-dot" data-step="3"></span>
+              </div>
+              <div class="step-buttons">
+                <button type="button" class="btn btn-outline-dark" id="prevStep" style="display:none">Previous</button>
+                <button type="button" class="btn btn-primary" id="nextStep">Next Step</button>
+                <button type="submit" class="btn btn-primary" id="submitRegistration" style="display:none">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  Complete Registration
+                </button>
+              </div>
+            </div>
+          </form>
+          <div class="auth-form-footer">
+            <p>Already a member? <a href="#" onclick="showPanel('login')" class="form-link">Sign In</a></p>
+          </div>
+        </div>
+
+        <!-- PAYMENT PANEL (after registration) -->
+        <div class="auth-form-panel" id="paymentPanel">
+          <div class="auth-form-header">
+            <h2>Complete Registration Payment</h2>
+            <p>Pay the membership fee of <strong>UGX 50,000</strong> and purchase minimum shares <strong>UGX 100,000</strong>.</p>
+          </div>
+          <div class="payment-summary-bar">
+            <div class="payment-summary-item">
+              <span class="label">Membership Fee</span>
+              <span class="value">UGX 50,000</span>
+            </div>
+            <div class="payment-summary-divider"></div>
+            <div class="payment-summary-item">
+              <span class="label">Share Capital (10 shares)</span>
+              <span class="value">UGX 100,000</span>
+            </div>
+            <div class="payment-summary-divider"></div>
+            <div class="payment-summary-item total">
+              <span class="label">Total Due</span>
+              <span class="value">UGX 150,000</span>
+            </div>
+          </div>
+
+          <div class="payment-methods" id="paymentMethods">
+            <h4>Select Payment Method</h4>
+
+            <!-- Bank Transfer -->
+            <div class="payment-method-card" data-method="bank" onclick="selectPaymentMethod(this)">
+              <div class="payment-method-header">
+                <div class="payment-method-icon bank-icon">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 21h18"/><path d="M3 10h18"/><path d="M5 6l7-3 7 3"/><path d="M4 10v11"/><path d="M20 10v11"/><path d="M8 10v11"/><path d="M12 10v11"/><path d="M16 10v11"/></svg>
+                </div>
+                <div class="payment-method-info">
+                  <h4>Bank Transfer</h4>
+                  <p>Transfer to our bank account</p>
+                </div>
+                <div class="payment-method-radio"><div class="radio-dot"></div></div>
+              </div>
+              <div class="payment-method-details">
+                <div class="bank-details-grid">
+                  <div class="bank-detail">
+                    <span class="bank-label">Bank Name</span>
+                    <span class="bank-value">Centenary Bank</span>
+                  </div>
+                  <div class="bank-detail">
+                    <span class="bank-label">Account Name</span>
+                    <span class="bank-value">PPAU SACCO</span>
+                  </div>
+                  <div class="bank-detail">
+                    <span class="bank-label">Account Number</span>
+                    <span class="bank-value account-number">3200123456789</span>
+                  </div>
+                  <div class="bank-detail">
+                    <span class="bank-label">Branch</span>
+                    <span class="bank-value">Kampala Main</span>
+                  </div>
+                  <div class="bank-detail">
+                    <span class="bank-label">Swift Code</span>
+                    <span class="bank-value">CERBUGKA</span>
+                  </div>
+                </div>
+                <div class="payment-instructions">
+                  <h5>Instructions</h5>
+                  <ol>
+                    <li>Transfer exactly <strong>UGX 150,000</strong> to the account above</li>
+                    <li>Use your <strong>full name</strong> as the payment reference</li>
+                    <li>Take a screenshot or photo of the transaction receipt</li>
+                    <li>Upload proof of payment below</li>
+                  </ol>
+                </div>
+                <div class="upload-proof" id="bankUpload">
+                  <label class="upload-area">
+                    <input type="file" accept="image/*,.pdf" onchange="handleProofUpload(this, 'bank')" />
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <span>Click or drag to upload receipt</span>
+                    <small>PNG, JPG or PDF (max 5MB)</small>
+                  </label>
+                  <div class="upload-preview" style="display:none"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Airtel Money -->
+            <div class="payment-method-card" data-method="airtel" onclick="selectPaymentMethod(this)">
+              <div class="payment-method-header">
+                <div class="payment-method-icon airtel-icon">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                </div>
+                <div class="payment-method-info">
+                  <h4>Airtel Money</h4>
+                  <p>Pay via Airtel Mobile Money</p>
+                </div>
+                <div class="payment-method-radio"><div class="radio-dot"></div></div>
+              </div>
+              <div class="payment-method-details">
+                <div class="mobile-money-info">
+                  <div class="mm-number-display">
+                    <span class="mm-label">Send to Airtel Money Number</span>
+                    <span class="mm-number" id="airtelNumber">0700 123 456</span>
+                    <button class="copy-btn" onclick="copyToClipboard('0700123456')">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                      Copy
+                    </button>
+                  </div>
+                  <div class="mm-details">
+                    <div class="mm-detail"><span>Name:</span><span>PPAU SACCO</span></div>
+                    <div class="mm-detail"><span>Reference:</span><span>Your Full Name</span></div>
+                    <div class="mm-detail"><span>Amount:</span><strong>UGX 150,000</strong></div>
+                  </div>
+                </div>
+                <div class="payment-instructions">
+                  <h5>Steps</h5>
+                  <ol>
+                    <li>Dial <strong>*185#</strong> on your Airtel line</li>
+                    <li>Select <strong>"Send Money"</strong></li>
+                    <li>Enter <strong>0700 123 456</strong> as recipient</li>
+                    <li>Enter amount: <strong>150,000</strong></li>
+                    <li>Enter your <strong>SACCO reference</strong> (your full name)</li>
+                    <li>Confirm with your PIN</li>
+                    <li>Take a screenshot of the confirmation SMS</li>
+                  </ol>
+                </div>
+                <div class="upload-proof">
+                  <label class="upload-area">
+                    <input type="file" accept="image/*,.pdf" onchange="handleProofUpload(this, 'airtel')" />
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <span>Upload confirmation screenshot</span>
+                    <small>PNG or JPG (max 5MB)</small>
+                  </label>
+                  <div class="upload-preview" style="display:none"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- MTN MoMo Pay -->
+            <div class="payment-method-card" data-method="momo" onclick="selectPaymentMethod(this)">
+              <div class="payment-method-header">
+                <div class="payment-method-icon momo-icon">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                </div>
+                <div class="payment-method-info">
+                  <h4>MTN Mobile Money (MoMo)</h4>
+                  <p>Pay via MTN MoMo or MoMo Pay</p>
+                </div>
+                <div class="payment-method-radio"><div class="radio-dot"></div></div>
+              </div>
+              <div class="payment-method-details">
+                <div class="mobile-money-info">
+                  <div class="mm-number-display">
+                    <span class="mm-label">Send to MTN MoMo Number</span>
+                    <span class="mm-number momo-color" id="momoNumber">0780 456 789</span>
+                    <button class="copy-btn" onclick="copyToClipboard('0780456789')">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                      Copy
+                    </button>
+                  </div>
+                  <div class="mm-details">
+                    <div class="mm-detail"><span>Name:</span><span>PPAU SACCO</span></div>
+                    <div class="mm-detail"><span>Reference:</span><span>Your Full Name</span></div>
+                    <div class="mm-detail"><span>Amount:</span><strong>UGX 150,000</strong></div>
+                  </div>
+                </div>
+                <div class="payment-instructions">
+                  <h5>Steps</h5>
+                  <ol>
+                    <li>Dial <strong>*165#</strong> on your MTN line</li>
+                    <li>Select <strong>"Send Money"</strong></li>
+                    <li>Enter <strong>0780 456 789</strong> as recipient</li>
+                    <li>Enter amount: <strong>150,000</strong></li>
+                    <li>Enter reference: <strong>Your Full Name</strong></li>
+                    <li>Confirm with your PIN</li>
+                    <li>Take a screenshot of the confirmation</li>
+                  </ol>
+                  <div class="momo-pay-option">
+                    <p><strong>Or use MoMo Pay:</strong> Scan the QR code below at any PPAU SACCO pay point, or enter Business Number <strong>PPAU001</strong> in the MTN MoMo app under MoMo Pay.</p>
+                    <div class="qr-placeholder">
+                      <div class="qr-box">
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.3">
+                          <rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/>
+                          <rect x="4" y="4" width="4" height="4" rx="0.5" fill="currentColor"/><rect x="16" y="4" width="4" height="4" rx="0.5" fill="currentColor"/><rect x="4" y="16" width="4" height="4" rx="0.5" fill="currentColor"/>
+                          <rect x="14" y="14" width="2" height="2"/><rect x="18" y="14" width="2" height="2"/><rect x="14" y="18" width="2" height="2"/><rect x="20" y="14" width="2" height="2"/>
+                        </svg>
+                        <span>Business: PPAU001</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="upload-proof">
+                  <label class="upload-area">
+                    <input type="file" accept="image/*,.pdf" onchange="handleProofUpload(this, 'momo')" />
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <span>Upload confirmation screenshot</span>
+                    <small>PNG or JPG (max 5MB)</small>
+                  </label>
+                  <div class="upload-preview" style="display:none"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Visa Card -->
+            <div class="payment-method-card" data-method="visa" onclick="selectPaymentMethod(this)">
+              <div class="payment-method-header">
+                <div class="payment-method-icon visa-icon">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                </div>
+                <div class="payment-method-info">
+                  <h4>Visa / Debit Card</h4>
+                  <p>Pay securely with your card</p>
+                </div>
+                <div class="payment-method-radio"><div class="radio-dot"></div></div>
+              </div>
+              <div class="payment-method-details">
+                <div class="card-payment-form">
+                  <div class="card-brands">
+                    <span class="card-brand visa-brand">VISA</span>
+                    <span class="card-brand mastercard-brand">MasterCard</span>
+                    <span class="card-brand unionpay-brand">UnionPay</span>
+                  </div>
+                  <div class="secure-badge">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    Secured by SSL encryption
+                  </div>
+                  <div class="form-group">
+                    <label for="cardName">Name on Card *</label>
+                    <input type="text" id="cardName" placeholder="As it appears on your card" />
+                  </div>
+                  <div class="form-group">
+                    <label for="cardNumber">Card Number *</label>
+                    <div class="input-with-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                      <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCardNumber(this)" />
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="cardExpiry">Expiry Date *</label>
+                      <input type="text" id="cardExpiry" placeholder="MM/YY" maxlength="5" oninput="formatExpiry(this)" />
+                    </div>
+                    <div class="form-group">
+                      <label for="cardCvv">CVV *</label>
+                      <div class="input-with-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <input type="password" id="cardCvv" placeholder="123" maxlength="4" />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="cardAmount">Amount (UGX)</label>
+                    <input type="text" id="cardAmount" value="150,000" readonly class="readonly-input" />
+                  </div>
+                  <button type="button" class="btn btn-primary btn-full btn-lg" onclick="processCardPayment()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    Pay UGX 150,000 Securely
+                  </button>
+                  <p class="card-note">By clicking Pay, you agree to our payment terms. Your card details are encrypted and never stored on our servers.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="payment-confirm-section">
+            <button type="button" class="btn btn-primary btn-full btn-lg" onclick="confirmPayment()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              I've Completed Payment - Confirm
+            </button>
+            <p class="payment-note">After payment, click the button above. Our team will verify your payment within 24-48 hours and activate your account.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MEMBER DASHBOARD (hidden by default) -->
+  <section class="portal-dashboard" id="dashboardSection" style="display:none">
+    <div class="dashboard-container">
+      <aside class="dashboard-sidebar">
+        <div class="sidebar-profile">
+          <div class="sidebar-avatar">JD</div>
+          <h4 id="dashName">John Doe</h4>
+          <span class="member-id" id="dashMemberId">PPAU-2026-0001</span>
+          <span class="member-status active-status">Active Member</span>
+        </div>
+        <nav class="sidebar-nav">
+          <a href="#" class="sidebar-link active" onclick="showDashTab(this, 'overview')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Overview
+          </a>
+          <a href="#" class="sidebar-link" onclick="showDashTab(this, 'savings')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            My Savings
+          </a>
+          <a href="#" class="sidebar-link" onclick="showDashTab(this, 'loans')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            My Loans
+          </a>
+          <a href="#" class="sidebar-link" onclick="showDashTab(this, 'contributions')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            Contributions
+          </a>
+          <a href="#" class="sidebar-link" onclick="showDashTab(this, 'settings')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Settings
+          </a>
+          <a href="#" class="sidebar-link sidebar-logout" onclick="logout()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Logout
+          </a>
+        </nav>
+      </aside>
+
+      <main class="dashboard-main">
+        <!-- OVERVIEW TAB -->
+        <div class="dash-tab active" id="dashOverview">
+          <div class="dash-header">
+            <h2>Welcome back, <span id="dashWelcomeName">John</span>!</h2>
+            <p>Here's your account summary</p>
+          </div>
+          <div class="dash-cards">
+            <div class="dash-card green-card">
+              <div class="dash-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              </div>
+              <span class="dash-card-label">Total Savings</span>
+              <span class="dash-card-value" id="dashSavings">UGX 2,450,000</span>
+              <span class="dash-card-change positive">+12% this quarter</span>
+            </div>
+            <div class="dash-card blue-card">
+              <div class="dash-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </div>
+              <span class="dash-card-label">Shares Owned</span>
+              <span class="dash-card-value">10 Shares</span>
+              <span class="dash-card-change">Value: UGX 100,000</span>
+            </div>
+            <div class="dash-card purple-card">
+              <div class="dash-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              </div>
+              <span class="dash-card-label">Active Loans</span>
+              <span class="dash-card-value">UGX 0</span>
+              <span class="dash-card-change">No active loans</span>
+            </div>
+            <div class="dash-card orange-card">
+              <div class="dash-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <span class="dash-card-label">Next Contribution</span>
+              <span class="dash-card-value">UGX 100,000</span>
+              <span class="dash-card-change">Due: 1st Aug 2026</span>
+            </div>
+          </div>
+
+          <div class="dash-section">
+            <h3>Recent Transactions</h3>
+            <div class="dash-table-wrapper">
+              <table class="dash-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>01 Jul 2026</td>
+                    <td>Monthly Contribution</td>
+                    <td>Credit</td>
+                    <td class="positive-amount">+UGX 100,000</td>
+                    <td><span class="status-badge completed">Completed</span></td>
+                  </tr>
+                  <tr>
+                    <td>01 Jun 2026</td>
+                    <td>Monthly Contribution</td>
+                    <td>Credit</td>
+                    <td class="positive-amount">+UGX 100,000</td>
+                    <td><span class="status-badge completed">Completed</span></td>
+                  </tr>
+                  <tr>
+                    <td>15 May 2026</td>
+                    <td>Share Purchase (5 shares)</td>
+                    <td>Debit</td>
+                    <td class="negative-amount">-UGX 50,000</td>
+                    <td><span class="status-badge completed">Completed</span></td>
+                  </tr>
+                  <tr>
+                    <td>01 May 2026</td>
+                    <td>Monthly Contribution</td>
+                    <td>Credit</td>
+                    <td class="positive-amount">+UGX 100,000</td>
+                    <td><span class="status-badge completed">Completed</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SAVINGS TAB -->
+        <div class="dash-tab" id="dashSavings">
+          <div class="dash-header">
+            <h2>My Savings</h2>
+            <p>Track your savings and dividends</p>
+          </div>
+          <div class="dash-cards">
+            <div class="dash-card green-card">
+              <span class="dash-card-label">Total Savings Balance</span>
+              <span class="dash-card-value">UGX 2,450,000</span>
+            </div>
+            <div class="dash-card blue-card">
+              <span class="dash-card-label">Pending Dividends (2026)</span>
+              <span class="dash-card-value">UGX 367,500</span>
+              <span class="dash-card-change">15% projected rate</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- LOANS TAB -->
+        <div class="dash-tab" id="dashLoans">
+          <div class="dash-header">
+            <h2>My Loans</h2>
+            <p>Apply for and manage your loans</p>
+          </div>
+          <div class="loan-apply-card">
+            <h3>Apply for a Loan</h3>
+            <p>You are eligible to borrow up to <strong>UGX 3,000,000</strong> based on your savings balance.</p>
+            <a href="#contact" class="btn btn-primary">Apply for Loan</a>
+          </div>
+        </div>
+
+        <!-- CONTRIBUTIONS TAB -->
+        <div class="dash-tab" id="dashContributions">
+          <div class="dash-header">
+            <h2>Contributions</h2>
+            <p>View and manage your monthly contributions</p>
+          </div>
+          <div class="dash-cards">
+            <div class="dash-card green-card">
+              <span class="dash-card-label">Monthly Contribution</span>
+              <span class="dash-card-value">UGX 100,000</span>
+            </div>
+            <div class="dash-card blue-card">
+              <span class="dash-card-label">Total Contributions (2026)</span>
+              <span class="dash-card-value">UGX 700,000</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SETTINGS TAB -->
+        <div class="dash-tab" id="dashSettings">
+          <div class="dash-header">
+            <h2>Account Settings</h2>
+            <p>Manage your account preferences</p>
+          </div>
+          <div class="settings-card">
+            <h3>Profile Information</h3>
+            <form class="settings-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>First Name</label>
+                  <input type="text" value="John" />
+                </div>
+                <div class="form-group">
+                  <label>Last Name</label>
+                  <input type="text" value="Doe" />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Email</label>
+                  <input type="email" value="john.doe@email.com" />
+                </div>
+                <div class="form-group">
+                  <label>Phone</label>
+                  <input type="tel" value="+256 700 123 456" />
+                </div>
+              </div>
+              <button type="button" class="btn btn-primary">Save Changes</button>
+            </form>
+          </div>
+        </div>
+      </main>
+    </div>
+  </section>
+
+  <!-- NOTIFICATION CONTAINER -->
+  <div id="portalNotifications"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

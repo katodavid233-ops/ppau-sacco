@@ -229,16 +229,17 @@ img {
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
 }
 
 .nav-link {
-  padding: 8px 16px;
+  padding: 8px 12px;
   border-radius: var(--radius-full);
-  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
+  font-size: clamp(0.8rem, 0.85vw + 0.25rem, 0.92rem);
   font-weight: 500;
   color: rgba(255, 255, 255, 0.85);
   transition: var(--transition);
+  white-space: nowrap;
 }
 
 .nav-link:hover,
@@ -258,14 +259,15 @@ img {
 }
 
 .nav-btn {
-  margin-left: 8px;
-  padding: 10px 24px;
+  margin-left: 4px;
+  padding: 8px 20px;
   background: var(--green-800);
   color: var(--white) !important;
   border-radius: var(--radius-full);
   font-weight: 600;
-  font-size: clamp(0.85rem, 0.9vw + 0.3rem, 1rem);
+  font-size: clamp(0.8rem, 0.85vw + 0.25rem, 0.92rem);
   transition: var(--transition);
+  white-space: nowrap;
 }
 
 .nav-btn:hover {

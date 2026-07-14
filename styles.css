@@ -1036,6 +1036,20 @@ img {
 }
 
 /* ===== CONTACT ===== */
+.contact-intro {
+  text-align: center;
+  color: var(--gray-600);
+  font-size: clamp(0.9rem, 1vw + 0.35rem, 1.05rem);
+  max-width: 600px;
+  margin: -8px auto 40px;
+  line-height: 1.7;
+}
+
+.contact-detail {
+  font-size: clamp(0.75rem, 0.8vw + 0.25rem, 0.85rem);
+  color: var(--gray-500);
+}
+
 .contact-grid {
   display: grid;
   grid-template-columns: 1fr 1.3fr;

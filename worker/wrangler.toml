@@ -1,0 +1,17 @@
+name = "ppau-sacco-api"
+main = "index.js"
+compatibility_date = "2024-12-01"
+
+# KV Namespace binding
+# After creating the KV namespace, replace the ID below
+[[kv_namespaces]]
+binding = "MEMBERS_KV"
+id = "YOUR_KV_NAMESPACE_ID"
+
+# Environment variables (set via wrangler or Cloudflare dashboard)
+# [vars]
+# FLUTTERWAVE_PUBLIC_KEY = "FLWPUBK-xxxxxxxxxxxxx-X"
+# FLUTTERWAVE_SECRET_KEY = "FLWSECK-xxxxxxxxxxxxx-X"
+# FLUTTERWAVE_ENCRYPTION_KEY = "FLWSECK-xxxxxxxxxxxxx-X"
+# CORS_ORIGIN = "https://ppau-sacco.com"
+# ADMIN_EMAIL = "info@ppausacco.org"

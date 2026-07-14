@@ -364,6 +364,27 @@ window.addEventListener('load', () => {
 // PORTAL JAVASCRIPT
 // ==================================================================
 
+// API Configuration - Update this to your Cloudflare Worker URL after deployment
+const API_BASE = window.location.hostname === 'localhost'
+  ? 'http://localhost:8787'
+  : 'https://ppau-sacco-api.kibalama.workers.dev'; // Update with your worker URL
+
+async function apiCall(endpoint, method = 'GET', body = null) {
+  const options = {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+  };
+  if (body) options.body = JSON.stringify(body);
+
+  const response = await fetch(`${API_BASE}${endpoint}`, options);
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || data.message || 'API request failed');
+  }
+  return data;
+}
+
 // Check if we're on the portal page
 const isPortal = !!document.getElementById('authSection');
 
@@ -446,12 +467,12 @@ function showPanel(panel) {
 }
 
 // Login handler
-function handleLogin(e) {
+async function handleLogin(e) {
   e.preventDefault();
-  const email = document.getElementById('loginEmail').value.trim();
+  const identifier = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
 
-  if (!email || !password) {
+  if (!identifier || !password) {
     showPortalNotification('Please fill in all fields.', 'error');
     return;
   }
@@ -461,20 +482,29 @@ function handleLogin(e) {
   btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><circle cx="12" cy="12" r="10"/></svg> Signing in...';
   btn.disabled = true;
 
-  // Simulate login
-  setTimeout(() => {
-    btn.innerHTML = originalText;
-    btn.disabled = false;
+  try {
+    const data = await apiCall('/api/login', 'POST', { identifier, password });
 
     // Store login state
     localStorage.setItem('ppau_logged_in', 'true');
-    localStorage.setItem('ppau_user_name', 'John');
-    localStorage.setItem('ppau_user_fullname', 'John Doe');
-    localStorage.setItem('ppau_member_id', 'PPAU-2026-0001');
+    localStorage.setItem('ppau_token', data.token);
+    localStorage.setItem('ppau_user_name', data.member.firstName);
+    localStorage.setItem('ppau_user_fullname', `${data.member.firstName} ${data.member.lastName}`);
+    localStorage.setItem('ppau_member_id', data.member.memberId);
+
+    // Track login event
+    if (typeof gtag === 'function') {
+      gtag('event', 'login', { method: 'portal' });
+    }
 
     showDashboard();
-    showPortalNotification('Welcome back, John! Redirecting to dashboard...', 'success');
-  }, 1500);
+    showPortalNotification(`Welcome back, ${data.member.firstName}!`, 'success');
+  } catch (err) {
+    showPortalNotification(err.message || 'Login failed. Please try again.', 'error');
+  } finally {
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+  }
 }
 
 // Show dashboard
@@ -495,7 +525,7 @@ function showDashboard() {
   document.getElementById('navToLogin').href = '#dashboard';
   document.getElementById('navToPayments').style.display = 'inline-flex';
 
-  // Set user data
+  // Set user data from localStorage
   const name = localStorage.getItem('ppau_user_name') || 'Member';
   const fullname = localStorage.getItem('ppau_user_fullname') || 'Member';
   const memberId = localStorage.getItem('ppau_member_id') || 'PPAU-2026-XXXX';
@@ -507,14 +537,61 @@ function showDashboard() {
   if (welcomeName) welcomeName.textContent = name;
   if (dashName) dashName.textContent = fullname;
   if (dashMemberId) dashMemberId.textContent = memberId;
+
+  // Fetch latest data from API
+  fetchMemberData();
+}
+
+// Fetch member data from API
+async function fetchMemberData() {
+  const token = localStorage.getItem('ppau_token');
+  if (!token) return;
+
+  try {
+    const data = await apiCall(`/api/member?token=${token}`);
+
+    if (data.member) {
+      const m = data.member;
+      const welcomeName = document.getElementById('dashWelcomeName');
+      const dashName = document.getElementById('dashName');
+
+      if (welcomeName) welcomeName.textContent = m.firstName;
+      if (dashName) dashName.textContent = `${m.firstName} ${m.lastName}`;
+
+      // Update savings display
+      const savingsEl = document.getElementById('dashSavings');
+      if (savingsEl) {
+        const total = m.totalSavings || 0;
+        savingsEl.textContent = `UGX ${total.toLocaleString()}`;
+      }
+
+      // Update shares display
+      const sharesEl = document.querySelector('.dash-card.blue-card .dash-card-value');
+      if (sharesEl && m.totalShares !== undefined) {
+        sharesEl.textContent = `${m.totalShares} Shares`;
+      }
+
+      // Update status badge
+      const statusEl = document.querySelector('.member-status');
+      if (statusEl) {
+        statusEl.textContent = m.status === 'active' ? 'Active Member' : 'Pending Verification';
+        statusEl.className = `member-status ${m.status === 'active' ? 'active-status' : ''}`;
+      }
+    }
+  } catch (err) {
+    // Silently fail - dashboard still shows cached data
+    console.log('Could not fetch latest member data:', err.message);
+  }
 }
 
 // Logout
 function logout() {
   localStorage.removeItem('ppau_logged_in');
+  localStorage.removeItem('ppau_token');
   localStorage.removeItem('ppau_user_name');
   localStorage.removeItem('ppau_user_fullname');
   localStorage.removeItem('ppau_member_id');
+  localStorage.removeItem('ppau_user_email');
 
   const authSection = document.getElementById('authSection');
   const dashSection = document.getElementById('dashboardSection');
@@ -612,7 +689,7 @@ function updateFormSteps() {
 }
 
 // Register handler
-function handleRegister(e) {
+async function handleRegister(e) {
   e.preventDefault();
 
   const btn = document.getElementById('submitRegistration');
@@ -620,33 +697,52 @@ function handleRegister(e) {
   btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><circle cx="12" cy="12" r="10"/></svg> Creating Account...';
   btn.disabled = true;
 
-  // Collect form data
-  const formData = {
-    firstName: document.getElementById('regFirstName').value,
-    lastName: document.getElementById('regLastName').value,
-    email: document.getElementById('regEmail').value,
-    phone: document.getElementById('regPhone').value,
-  };
+  try {
+    // Collect all form data
+    const formData = {
+      firstName: document.getElementById('regFirstName').value,
+      lastName: document.getElementById('regLastName').value,
+      email: document.getElementById('regEmail').value,
+      phone: document.getElementById('regPhone').value,
+      gender: document.getElementById('regGender').value,
+      dateOfBirth: document.getElementById('regDob').value,
+      nin: document.getElementById('regNin').value,
+      licenseNumber: document.getElementById('regPharmacyLicense').value,
+      practiceType: document.getElementById('regPracticeType').value,
+      employer: document.getElementById('regEmployer').value,
+      location: document.getElementById('regLocation').value,
+      salaryRange: document.getElementById('regSalary').value,
+      memberType: document.getElementById('regMemberType').value,
+      password: document.getElementById('regPassword').value,
+      nextOfKin: document.getElementById('regNextOfKin').value,
+      nextOfKinPhone: document.getElementById('regNextOfKinPhone').value,
+      monthlyContribution: document.getElementById('regMonthlyContribution').value,
+    };
 
-  // Simulate registration
-  setTimeout(() => {
-    btn.innerHTML = originalText;
-    btn.disabled = false;
-
-    // Generate member ID
-    const memberId = 'PPAU-2026-' + String(Math.floor(Math.random() * 9000) + 1000);
+    const data = await apiCall('/api/register', 'POST', formData);
 
     // Store user data
     localStorage.setItem('ppau_logged_in', 'true');
+    localStorage.setItem('ppau_token', data.token);
     localStorage.setItem('ppau_user_name', formData.firstName);
     localStorage.setItem('ppau_user_fullname', `${formData.firstName} ${formData.lastName}`);
-    localStorage.setItem('ppau_member_id', memberId);
+    localStorage.setItem('ppau_member_id', data.memberId);
     localStorage.setItem('ppau_user_email', formData.email);
+
+    // Track registration event
+    if (typeof gtag === 'function') {
+      gtag('event', 'sign_up', { method: 'portal' });
+    }
 
     // Show payment panel
     showPanel('payment');
-    showPortalNotification(`Registration successful! Your Member ID is ${memberId}. Please complete payment to activate your account.`, 'success');
-  }, 2000);
+    showPortalNotification(`Registration successful! Your Member ID is ${data.memberId}. Please complete payment to activate your account.`, 'success');
+  } catch (err) {
+    showPortalNotification(err.message || 'Registration failed. Please try again.', 'error');
+  } finally {
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+  }
 }
 
 // Payment method selection
@@ -736,7 +832,7 @@ function handleProofUpload(input, method) {
 }
 
 // Confirm payment
-function confirmPayment() {
+async function confirmPayment() {
   const selected = document.querySelector('.payment-method-card.selected');
   if (!selected) {
     showPortalNotification('Please select a payment method first.', 'error');
@@ -753,7 +849,6 @@ function confirmPayment() {
 
   // Check if there's an uploaded file (except for card payments)
   if (method !== 'visa') {
-    const hasUpload = selected.querySelector('.upload-preview[style*="block"], .upload-preview:not([style*="none"])');
     const uploadPreview = selected.querySelector('.upload-preview');
     if (!uploadPreview || uploadPreview.style.display === 'none' || !uploadPreview.innerHTML.trim()) {
       showPortalNotification('Please upload proof of payment before confirming.', 'error');
@@ -766,21 +861,45 @@ function confirmPayment() {
   btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><circle cx="12" cy="12" r="10"/></svg> Processing...';
   btn.disabled = true;
 
-  setTimeout(() => {
+  try {
+    const memberId = localStorage.getItem('ppau_member_id');
+
+    const data = await apiCall('/api/payment/confirm', 'POST', {
+      memberId,
+      paymentMethod: method,
+      amount: 150000,
+      reference: `${methodNames[method]} - Registration Payment`,
+    });
+
+    // Track payment event
+    if (typeof gtag === 'function') {
+      gtag('event', 'payment', {
+        method: methodNames[method],
+        amount: 150000,
+        currency: 'UGX',
+      });
+    }
+
     btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Payment Confirmed!';
     btn.style.background = '#16a34a';
 
-    showPortalNotification(`Payment via ${methodNames[method]} submitted successfully! Our team will verify and activate your account within 24-48 hours.`, 'success');
+    showPortalNotification(`Payment via ${methodNames[method]} submitted! Our team will verify within 24-48 hours.`, 'success');
 
-    // Redirect to dashboard after delay
     setTimeout(() => {
       showDashboard();
     }, 3000);
-  }, 2000);
+  } catch (err) {
+    showPortalNotification(err.message || 'Payment submission failed.', 'error');
+  } finally {
+    if (btn.style.background !== '#16a34a') {
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    }
+  }
 }
 
-// Card payment processing
-function processCardPayment() {
+// Card payment processing via Flutterwave
+async function processCardPayment() {
   const cardName = document.getElementById('cardName')?.value;
   const cardNumber = document.getElementById('cardNumber')?.value;
   const cardExpiry = document.getElementById('cardExpiry')?.value;
@@ -798,19 +917,42 @@ function processCardPayment() {
 
   const btn = event.target;
   const originalText = btn.innerHTML;
-  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><circle cx="12" cy="12" r="10"/></svg> Processing Payment...';
+  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><circle cx="12" cy="12" r="10"/></svg> Initializing Payment...';
   btn.disabled = true;
 
-  setTimeout(() => {
-    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Payment Successful!';
-    btn.style.background = '#16a34a';
+  try {
+    const memberId = localStorage.getItem('ppau_member_id');
+    const email = localStorage.getItem('ppau_user_email') || '';
 
-    showPortalNotification('Card payment of UGX 150,000 processed successfully! Redirecting to your dashboard...', 'success');
+    const data = await apiCall('/api/payment/flutterwave/initialize', 'POST', {
+      memberId,
+      email,
+      amount: 150000,
+      currency: 'UGX',
+      firstName: localStorage.getItem('ppau_user_name') || '',
+      lastName: localStorage.getItem('ppau_user_fullname')?.split(' ').slice(1).join(' ') || '',
+    });
 
-    setTimeout(() => {
-      showDashboard();
-    }, 3000);
-  }, 2500);
+    if (data.checkout_url) {
+      // Track payment attempt
+      if (typeof gtag === 'function') {
+        gtag('event', 'begin_checkout', {
+          currency: 'UGX',
+          value: 150000,
+        });
+      }
+      // Redirect to Flutterwave checkout
+      window.location.href = data.checkout_url;
+    } else {
+      showPortalNotification('Failed to initialize card payment. Please try mobile money or bank transfer.', 'error');
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    }
+  } catch (err) {
+    showPortalNotification(err.message || 'Card payment is not available yet. Please use bank transfer, Airtel Money, or MoMo Pay.', 'error');
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+  }
 }
 
 // Format card number with spaces

@@ -396,7 +396,6 @@ async function apiCall(endpoint, method = 'GET', body = null) {
     }
     return data;
   } catch (err) {
-    // Fallback: demo mode when running locally without Worker
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       return demoApiCall(endpoint, method, body);
     }

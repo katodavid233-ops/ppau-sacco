@@ -19,32 +19,60 @@ export default {
 
     const url = new URL(request.url);
     const path = url.pathname;
+    const normalizedPath = normalizeApiPath(path);
 
     try {
       // Route requests
-      if (path === '/api/register' && request.method === 'POST') {
-        return await handleRegister(request, env, corsHeaders);
+      if (normalizedPath === '/api/register') {
+        if (request.method === 'POST') {
+          return await handleRegister(request, env, corsHeaders);
+        }
+        return jsonResponse({ error: 'Method not allowed', expected: 'POST' }, 405, corsHeaders);
       }
-      if (path === '/api/login' && request.method === 'POST') {
-        return await handleLogin(request, env, corsHeaders);
+      if (normalizedPath === '/api/login') {
+        if (request.method === 'POST') {
+          return await handleLogin(request, env, corsHeaders);
+        }
+        return jsonResponse({ error: 'Method not allowed', expected: 'POST' }, 405, corsHeaders);
       }
-      if (path === '/api/payment/confirm' && request.method === 'POST') {
-        return await handlePaymentConfirm(request, env, corsHeaders);
+      if (normalizedPath === '/api/payment/confirm') {
+        if (request.method === 'POST') {
+          return await handlePaymentConfirm(request, env, corsHeaders);
+        }
+        return jsonResponse({ error: 'Method not allowed', expected: 'POST' }, 405, corsHeaders);
       }
-      if (path === '/api/payment/flutterwave/initialize' && request.method === 'POST') {
-        return await handleFlutterwaveInit(request, env, corsHeaders);
+      if (normalizedPath === '/api/payment/flutterwave/initialize') {
+        if (request.method === 'POST') {
+          return await handleFlutterwaveInit(request, env, corsHeaders);
+        }
+        return jsonResponse({ error: 'Method not allowed', expected: 'POST' }, 405, corsHeaders);
       }
-      if (path === '/api/payment/flutterwave/webhook' && request.method === 'POST') {
-        return await handleFlutterwaveWebhook(request, env, corsHeaders);
+      if (normalizedPath === '/api/payment/flutterwave/webhook') {
+        if (request.method === 'POST') {
+          return await handleFlutterwaveWebhook(request, env, corsHeaders);
+        }
+        return jsonResponse({ error: 'Method not allowed', expected: 'POST' }, 405, corsHeaders);
       }
-      if (path === '/api/member' && request.method === 'GET') {
-        return await handleGetMember(request, env, corsHeaders);
+      if (normalizedPath === '/api/member') {
+        if (request.method === 'GET') {
+          return await handleGetMember(request, env, corsHeaders);
+        }
+        return jsonResponse({ error: 'Method not allowed', expected: 'GET' }, 405, corsHeaders);
       }
-      if (path === '/api/health') {
-        return jsonResponse({ status: 'ok', timestamp: new Date().toISOString() }, 200, corsHeaders);
+      if (path === '/' || path === '') {
+        return jsonResponse({
+          status: 'ok',
+          service: 'PPAU SACCO Membership API',
+          message: 'Use /api/membership/health or the registration/payment routes.',
+          timestamp: new Date().toISOString(),
+        }, 200, corsHeaders);
       }
 
-      return jsonResponse({ error: 'Not found' }, 404, corsHeaders);
+      if (normalizedPath === '/api/health') {
+        return jsonResponse({ status: 'ok', timestamp: new Date().toISOString(), routes: ['register', 'login', 'payment', 'member'] }, 200, corsHeaders);
+      }
+
+      return jsonResponse({ error: 'Not found', path }, 404, corsHeaders);
     } catch (err) {
       return jsonResponse({ error: 'Internal server error', message: err.message }, 500, corsHeaders);
     }
@@ -58,6 +86,20 @@ function jsonResponse(data, status = 200, headers = {}) {
     status,
     headers: { 'Content-Type': 'application/json', ...headers },
   });
+}
+
+function normalizeApiPath(pathname) {
+  const aliasMap = {
+    '/api/membership/register': '/api/register',
+    '/api/membership/login': '/api/login',
+    '/api/membership/payment': '/api/payment/confirm',
+    '/api/membership/payment/flutterwave/initialize': '/api/payment/flutterwave/initialize',
+    '/api/membership/payment/flutterwave/webhook': '/api/payment/flutterwave/webhook',
+    '/api/membership/member': '/api/member',
+    '/api/membership/health': '/api/health',
+  };
+
+  return aliasMap[pathname] || pathname;
 }
 
 function generateMemberId() {

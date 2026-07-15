@@ -378,8 +378,8 @@ window.addEventListener('load', () => {
 
 // API Configuration - Update this to your Cloudflare Worker URL after deployment
 const API_BASE = window.location.hostname === 'localhost'
-  ? 'http://localhost:8787'
-  : 'https://ppau-sacco-api.kibalama.workers.dev'; // Update with your worker URL
+  ? 'https://ppau-sacco-api.katodavid233.workers.dev'
+  : 'https://ppau-sacco-api.katodavid233.workers.dev';
 
 async function apiCall(endpoint, method = 'GET', body = null) {
   const options = {
@@ -388,13 +388,65 @@ async function apiCall(endpoint, method = 'GET', body = null) {
   };
   if (body) options.body = JSON.stringify(body);
 
-  const response = await fetch(`${API_BASE}${endpoint}`, options);
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.error || data.message || 'API request failed');
+  try {
+    const response = await fetch(`${API_BASE}${endpoint}`, options);
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || data.message || 'API request failed');
+    }
+    return data;
+  } catch (err) {
+    // Fallback: demo mode when running locally without Worker
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return demoApiCall(endpoint, method, body);
+    }
+    throw err;
   }
-  return data;
+}
+
+// Demo mode for local testing without backend
+function demoApiCall(endpoint, method, body) {
+  // Register
+  if (endpoint === '/api/register') {
+    const memberId = 'PPAU-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 9999)).padStart(4, '0');
+    const token = 'demo_token_' + Date.now();
+    localStorage.setItem('ppau_demo_members', JSON.stringify({ ...body, memberId, token, status: 'pending', totalSavings: 0, totalShares: 0 }));
+    return Promise.resolve({ memberId, token, message: 'Registration successful' });
+  }
+
+  // Login
+  if (endpoint === '/api/login') {
+    const stored = JSON.parse(localStorage.getItem('ppau_demo_members') || 'null');
+    if (!stored) throw new Error('No registered member found. Please register first.');
+    if (stored.email !== body.identifier && stored.phone !== body.identifier) throw new Error('Member not found. Try your email or phone.');
+    if (stored.password !== body.password) throw new Error('Incorrect password.');
+    return Promise.resolve({ token: stored.token, member: { firstName: stored.firstName, lastName: stored.lastName, memberId: stored.memberId, status: stored.status } });
+  }
+
+  // Payment confirm
+  if (endpoint === '/api/payment/confirm') {
+    const stored = JSON.parse(localStorage.getItem('ppau_demo_members') || 'null');
+    if (stored) {
+      stored.totalSavings = 150000;
+      stored.paymentStatus = 'submitted';
+      localStorage.setItem('ppau_demo_members', JSON.stringify(stored));
+    }
+    return Promise.resolve({ message: 'Payment submitted', status: 'submitted' });
+  }
+
+  // Fetch member data
+  if (endpoint === '/api/member') {
+    const stored = JSON.parse(localStorage.getItem('ppau_demo_members') || 'null');
+    if (!stored) throw new Error('Member not found');
+    return Promise.resolve({ member: { firstName: stored.firstName, lastName: stored.lastName, memberId: stored.memberId, email: stored.email, phone: stored.phone, status: 'active', totalSavings: stored.totalSavings || 0, totalShares: stored.totalShares || 0, gender: stored.gender, employer: stored.employer, location: stored.location } });
+  }
+
+  // Flutterwave init
+  if (endpoint === '/api/payment/flutterwave/initialize') {
+    throw new Error('Card payments require the live backend. Please use bank transfer, Airtel Money, or MTN MoMo.');
+  }
+
+  return Promise.resolve({ message: 'Demo mode' });
 }
 
 // Check if we're on the portal page

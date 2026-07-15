@@ -3,8 +3,11 @@
 
 export default {
   async fetch(request, env) {
+    const allowedOrigins = ['https://ppau-sacco.com', 'https://ppau-sacco.pages.dev'];
+    const origin = request.headers.get('Origin') || '';
+    const corsOrigin = allowedOrigins.includes(origin) ? origin : '*';
     const corsHeaders = {
-      'Access-Control-Allow-Origin': env.CORS_ORIGIN || '*',
+      'Access-Control-Allow-Origin': corsOrigin,
       'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       'Access-Control-Max-Age': '86400',
@@ -299,7 +302,7 @@ async function handleFlutterwaveInit(request, env, corsHeaders) {
       tx_ref,
       amount: Number(amount),
       currency: currency || 'UGX',
-      redirect_url: `${env.CORS_ORIGIN || 'https://ppau-sacco.com'}/portal.html#payment-result`,
+      redirect_url: `https://ppau-sacco.com/portal.html#payment-result`,
       meta: { memberId },
       customer: {
         email,

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Consent Form - PPAU SACCO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --blue-800: #1e3a8a;
+      --blue-700: #1d4ed8;
+      --blue-500: #3b82f6;
+      --blue-100: #dbeafe;
+      --blue-50: #eff6ff;
+      --gray-800: #1f2937;
+      --gray-600: #4b5563;
+      --gray-400: #9ca3af;
+      --gray-200: #e5e7eb;
+      --white: #ffffff;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      color: var(--gray-800);
+      background: #f3f4f6;
+      line-height: 1.6;
+    }
+
+    .form-container {
+      max-width: 800px;
+      margin: 30px auto;
+      background: var(--white);
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+
+    .form-header {
+      background: linear-gradient(135deg, #0c1e4a, #1d4ed8);
+      color: white;
+      padding: 30px 40px;
+      text-align: center;
+    }
+
+    .form-header h1 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+
+    .form-header p {
+      font-size: 0.85rem;
+      opacity: 0.85;
+    }
+
+    .form-body {
+      padding: 35px 40px;
+    }
+
+    .section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--blue-700);
+      margin-bottom: 16px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid var(--blue-100);
+    }
+
+    .consent-text {
+      font-size: 0.88rem;
+      line-height: 1.8;
+      margin-bottom: 24px;
+      color: var(--gray-600);
+    }
+
+    .consent-text .blank-line {
+      display: inline-block;
+      min-width: 200px;
+      border-bottom: 1px solid var(--gray-400);
+      margin: 0 4px;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .field-row.single {
+      grid-template-columns: 1fr;
+    }
+
+    .field-row.triple {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .form-field {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-field label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--gray-600);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-field input, .form-field textarea {
+      padding: 10px 12px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.2s;
+      background: var(--blue-50);
+    }
+
+    .form-field input:focus, .form-field textarea:focus {
+      outline: none;
+      border-color: var(--blue-500);
+      background: var(--white);
+    }
+
+    .form-field textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .signature-box {
+      border: 1.5px dashed var(--gray-400);
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 12px;
+      background: var(--blue-50);
+      text-align: center;
+      color: var(--gray-400);
+      font-size: 0.8rem;
+    }
+
+    .note {
+      background: var(--blue-50);
+      border-left: 4px solid var(--blue-500);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.82rem;
+      color: var(--gray-600);
+      margin: 20px 0;
+    }
+
+    .declaration-section {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 2px solid var(--gray-200);
+    }
+
+    .declaration-text {
+      font-size: 0.88rem;
+      line-height: 1.8;
+      color: var(--gray-600);
+      margin-bottom: 20px;
+    }
+
+    .official-use {
+      margin-top: 30px;
+      padding: 20px;
+      background: #f9fafb;
+      border-radius: 10px;
+      border: 1.5px dashed var(--gray-200);
+    }
+
+    .official-use h3 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--blue-800);
+      text-align: center;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .official-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .official-row:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      padding: 24px 40px 30px;
+      border-top: 1px solid var(--gray-200);
+    }
+
+    .btn {
+      padding: 12px 32px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--blue-700);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--blue-800);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--blue-700);
+      color: var(--blue-700);
+    }
+
+    .btn-outline:hover {
+      background: var(--blue-50);
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 40px;
+      background: var(--white);
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .top-bar a {
+      text-decoration: none;
+      color: var(--blue-700);
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .top-bar a:hover { text-decoration: underline; }
+
+    .logo-text { font-size: 1rem; font-weight: 800; color: var(--blue-800); }
+
+    @media print {
+      body { background: white; }
+      .form-container { box-shadow: none; margin: 0; border-radius: 0; }
+      .form-actions, .top-bar { display: none !important; }
+      .form-field input, .form-field textarea {
+        border: none;
+        border-bottom: 1px solid #ccc;
+        background: transparent;
+        border-radius: 0;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .form-body { padding: 20px; }
+      .form-header { padding: 20px; }
+      .field-row, .field-row.triple { grid-template-columns: 1fr; }
+      .official-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-bar">
+    <span class="logo-text">PPAU SACCO</span>
+    <a href="index.html">&larr; Back to Home</a>
+  </div>
+
+  <div class="form-container">
+    <div class="form-header">
+      <h1>CONSENT FORM</h1>
+      <p>PPAU Savings &amp; Credit Cooperative Society</p>
+    </div>
+
+    <form id="consentForm">
+      <div class="form-body">
+
+        <!-- SAVINGS CONSENT -->
+        <div class="section-title">Savings Consent</div>
+        <div class="consent-text">
+          I <span class="blank-line">&nbsp;</span> hereby consent to save Uganda Shillings <span class="blank-line">&nbsp;</span> (in words) with PPAU Savings &amp; Credit Cooperative Society (PPAU SACCO) on a monthly basis.
+        </div>
+
+        <div class="field-row">
+          <div class="form-field">
+            <label>Full Name *</label>
+            <input type="text" id="consentName" placeholder="Enter your full name" required />
+          </div>
+          <div class="form-field">
+            <label>Amount in Words *</label>
+            <input type="text" id="amountWords" placeholder="e.g. One Hundred Thousand" required />
+          </div>
+        </div>
+
+        <div class="field-row triple">
+          <div class="form-field">
+            <label>Membership Fee (UGX)</label>
+            <input type="text" id="membershipFee" placeholder="e.g. 20,000" />
+          </div>
+          <div class="form-field">
+            <label>No. of Shares Purchased</label>
+            <input type="number" id="numShares" placeholder="e.g. 5" />
+          </div>
+          <div class="form-field">
+            <label>NIN Number *</label>
+            <input type="text" id="ninNumber" placeholder="CMXXXXXXXXX" required />
+          </div>
+        </div>
+
+        <div class="field-row triple">
+          <div class="form-field">
+            <label>A/C Number</label>
+            <input type="text" id="accountNumber" placeholder="Account number" />
+          </div>
+          <div class="form-field">
+            <label>Email Address *</label>
+            <input type="email" id="consentEmail" placeholder="your@email.com" required />
+          </div>
+          <div class="form-field">
+            <label>Contact *</label>
+            <input type="tel" id="consentPhone" placeholder="+256 7XX XXX XXX" required />
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="form-field">
+            <label>Physical Address</label>
+            <input type="text" id="physicalAddress" placeholder="Physical address" />
+          </div>
+          <div class="form-field">
+            <label>Place of Work</label>
+            <input type="text" id="placeOfWork" placeholder="Employer / Practice location" />
+          </div>
+        </div>
+
+        <!-- NEXT OF KIN -->
+        <div class="section-title" style="margin-top:24px;">Contact Information for Next of Kin</div>
+
+        <div class="field-row triple">
+          <div class="form-field">
+            <label>Name *</label>
+            <input type="text" id="nokName" placeholder="Next of kin full name" required />
+          </div>
+          <div class="form-field">
+            <label>Relationship *</label>
+            <input type="text" id="nokRelationship" placeholder="e.g. Spouse, Parent" required />
+          </div>
+          <div class="form-field">
+            <label>Contact *</label>
+            <input type="tel" id="nokPhone" placeholder="+256 7XX XXX XXX" required />
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="form-field">
+            <label>Email Address</label>
+            <input type="email" id="nokEmail" placeholder="Next of kin email" />
+          </div>
+          <div class="form-field">
+            <label>Signature (Member)</label>
+            <div class="signature-box">Sign here (print and sign)</div>
+          </div>
+        </div>
+
+        <div class="note">
+          <strong>NOTE:</strong> Attach photocopies of National ID, Driving Permit, or Passport.
+        </div>
+
+        <!-- DECLARATION -->
+        <div class="declaration-section">
+          <div class="section-title">Declaration</div>
+          <div class="declaration-text">
+            I <span class="blank-line">&nbsp;</span> declare that the information shared above is correct to the best of my knowledge and I shall abide by the byelaws of the SACCO as stated from time to time.
+          </div>
+
+          <div class="field-row">
+            <div class="form-field">
+              <label>Member Name (Declaration)</label>
+              <input type="text" id="declarationName" placeholder="Full name" />
+            </div>
+            <div class="form-field">
+              <label>Signature &amp; Date</label>
+              <div class="signature-box">Sign &amp; Date (print and sign)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FOR OFFICIAL USE ONLY -->
+        <div class="official-use">
+          <h3>For Official Use Only</h3>
+
+          <div class="official-row">
+            <div class="form-field">
+              <label>Name (Treasurer)</label>
+              <input type="text" placeholder="Treasurer name" />
+            </div>
+            <div class="form-field">
+              <label>Signature</label>
+              <div class="signature-box" style="padding:10px;min-height:40px;"></div>
+            </div>
+            <div class="form-field">
+              <label>Date</label>
+              <input type="date" />
+            </div>
+          </div>
+
+          <div class="official-row">
+            <div class="form-field">
+              <label>Name (Chairperson)</label>
+              <input type="text" placeholder="Chairperson name" />
+            </div>
+            <div class="form-field">
+              <label>Signature</label>
+              <div class="signature-box" style="padding:10px;min-height:40px;"></div>
+            </div>
+            <div class="form-field">
+              <label>Date</label>
+              <input type="date" />
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-outline" onclick="window.print()">Print Form</button>
+        <button type="button" class="btn btn-primary" onclick="submitConsent()">Submit</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    function submitConsent() {
+      const form = document.getElementById('consentForm');
+      const required = form.querySelectorAll('[required]');
+      let valid = true;
+
+      required.forEach(input => {
+        if (!input.value.trim()) {
+          input.style.borderColor = '#dc2626';
+          valid = false;
+        } else {
+          input.style.borderColor = '';
+        }
+      });
+
+      if (!valid) {
+        alert('Please fill in all required fields.');
+        return;
+      }
+
+      // Store in localStorage for demo
+      const data = {};
+      const inputs = form.querySelectorAll('input, textarea');
+      inputs.forEach(input => {
+        if (input.id) data[input.id] = input.value;
+      });
+      localStorage.setItem('ppau_consent_form', JSON.stringify(data));
+
+      alert('Consent form submitted successfully! In production, this would be sent to the SACCO office.');
+    }
+  </script>
+
+</body>
+</html>

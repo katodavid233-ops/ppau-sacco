@@ -49,9 +49,24 @@
 
   <!-- HERO SECTION -->
   <section id="home" class="hero">
-    <div class="hero-bg"></div>
+    <div class="hero-carousel">
+      <div class="hero-slide active" style="background-image:url('WhatsApp Image 2026-07-15 at 18.21.28.jpeg')"></div>
+      <div class="hero-slide" style="background-image:url('WhatsApp Image 2026-07-15 at 18.21.31.jpeg')"></div>
+      <div class="hero-slide" style="background-image:url('WhatsApp Image 2026-07-15 at 18.21.31 (1).jpeg')"></div>
+      <div class="hero-slide" style="background-image:url('WhatsApp Image 2026-07-15 at 18.21.32.jpeg')"></div>
+      <div class="hero-slide" style="background-image:url('WhatsApp Image 2026-07-15 at 18.21.32 (1).jpeg')"></div>
+    </div>
     <div class="hero-overlay"></div>
     <div class="hero-particles" id="heroParticles"></div>
+    <button class="hero-arrow hero-prev" onclick="changeSlide(-1)">&#10094;</button>
+    <button class="hero-arrow hero-next" onclick="changeSlide(1)">&#10095;</button>
+    <div class="hero-dots">
+      <span class="hero-dot active" onclick="goToSlide(0)"></span>
+      <span class="hero-dot" onclick="goToSlide(1)"></span>
+      <span class="hero-dot" onclick="goToSlide(2)"></span>
+      <span class="hero-dot" onclick="goToSlide(3)"></span>
+      <span class="hero-dot" onclick="goToSlide(4)"></span>
+    </div>
     <div class="hero-content">
       <h1>Your Financial <span class="highlight">Partner</span> in Healthcare</h1>
       <p class="hero-subtitle">PPAU SACCO empowers pharmacy professionals across Uganda with affordable savings, accessible loans, and financial growth opportunities.</p>

@@ -1401,3 +1401,40 @@ function showPortalNotification(message, type = 'info') {
     }
   }, 6000);
 }
+
+// ===== HERO CAROUSEL =====
+let currentSlideIndex = 0;
+let slideInterval;
+
+function showSlide(index) {
+  const slides = document.querySelectorAll('.hero-slide');
+  const dots = document.querySelectorAll('.hero-dot');
+  if (!slides.length) return;
+
+  slides.forEach(s => s.classList.remove('active'));
+  dots.forEach(d => d.classList.remove('active'));
+
+  currentSlideIndex = (index + slides.length) % slides.length;
+  slides[currentSlideIndex].classList.add('active');
+  dots[currentSlideIndex].classList.add('active');
+}
+
+function changeSlide(dir) {
+  showSlide(currentSlideIndex + dir);
+  resetSlideInterval();
+}
+
+function goToSlide(index) {
+  showSlide(index);
+  resetSlideInterval();
+}
+
+function resetSlideInterval() {
+  clearInterval(slideInterval);
+  slideInterval = setInterval(() => showSlide(currentSlideIndex + 1), 5000);
+}
+
+// Start carousel if on homepage
+if (document.querySelector('.hero-carousel')) {
+  slideInterval = setInterval(() => showSlide(currentSlideIndex + 1), 5000);
+}

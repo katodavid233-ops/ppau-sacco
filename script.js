@@ -448,6 +448,10 @@ function demoApiCall(endpoint, method, body) {
   return Promise.resolve({ message: 'Demo mode' });
 }
 
+// Registration form steps
+let currentStep = 1;
+const totalSteps = 3;
+
 // Check if we're on the portal page
 const isPortal = !!document.getElementById('authSection');
 
@@ -692,10 +696,6 @@ if (isPortal && localStorage.getItem('ppau_logged_in') === 'true') {
     showDashboard();
   }
 }
-
-// Registration form steps
-let currentStep = 1;
-const totalSteps = 3;
 
 function nextFormStep() {
   if (currentStep >= totalSteps) return;

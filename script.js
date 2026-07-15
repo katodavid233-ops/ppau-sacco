@@ -440,6 +440,24 @@ function demoApiCall(endpoint, method, body) {
     return Promise.resolve({ member: { firstName: stored.firstName, lastName: stored.lastName, memberId: stored.memberId, email: stored.email, phone: stored.phone, status: 'active', totalSavings: stored.totalSavings || 0, totalShares: stored.totalShares || 0, gender: stored.gender, employer: stored.employer, location: stored.location } });
   }
 
+  // Admin login
+  if (endpoint === '/api/admin/login') {
+    if (body.email === 'admin@ppausacco.org' && body.password === 'Admin@2026!') {
+      return Promise.resolve({ token: 'demo_admin_token', admin: { email: body.email } });
+    }
+    throw new Error('Invalid admin credentials');
+  }
+
+  if (endpoint.startsWith('/api/admin/registrations')) {
+    const stored = JSON.parse(localStorage.getItem('ppau_demo_members') || 'null');
+    if (!stored) return Promise.resolve({ registrations: [] });
+    return Promise.resolve({ registrations: [stored] });
+  }
+
+  if (endpoint.startsWith('/api/admin/payments')) {
+    return Promise.resolve({ payments: [] });
+  }
+
   // Flutterwave init
   if (endpoint === '/api/payment/flutterwave/initialize') {
     throw new Error('Card payments require the live backend. Please use bank transfer, Airtel Money, or MTN MoMo.');
@@ -467,6 +485,12 @@ function initPortal() {
   const loginForm = document.getElementById('loginForm');
   if (loginForm) {
     loginForm.addEventListener('submit', handleLogin);
+  }
+
+  // Admin form
+  const adminLoginForm = document.getElementById('adminLoginForm');
+  if (adminLoginForm) {
+    adminLoginForm.addEventListener('submit', handleAdminLogin);
   }
 
   // Register form
@@ -507,6 +531,8 @@ function handlePortalHash() {
     showPanel('login');
   } else if (hash === 'payments') {
     showPanel('payment');
+  } else if (hash === 'admin') {
+    showAdminPanel();
   } else if (hash === 'dashboard') {
     showDashboard();
   }
@@ -520,13 +546,17 @@ function showPanel(panel) {
   const registerPanel = document.getElementById('registerPanel');
   const paymentPanel = document.getElementById('paymentPanel');
   const authSection = document.getElementById('authSection');
+  const adminSection = document.getElementById('adminSection');
+  const dashSection = document.getElementById('dashboardSection');
 
   if (!loginPanel) return;
 
   loginPanel.classList.remove('active');
   registerPanel.classList.remove('active');
   paymentPanel.classList.remove('active');
-  authSection.style.display = '';
+  if (authSection) authSection.style.display = '';
+  if (adminSection) adminSection.style.display = 'none';
+  if (dashSection) dashSection.style.display = 'none';
 
   // Update nav links
   document.querySelectorAll('.portal-nav-link').forEach(l => l.classList.remove('active'));
@@ -587,15 +617,178 @@ async function handleLogin(e) {
   }
 }
 
+function showAdminPanel() {
+  const authSection = document.getElementById('authSection');
+  const dashSection = document.getElementById('dashboardSection');
+  const adminSection = document.getElementById('adminSection');
+  const loginPanel = document.getElementById('adminLoginPanel');
+  const dashboardPanel = document.getElementById('adminDashboardPanel');
+
+  if (!adminSection) return;
+
+  if (authSection) authSection.style.display = 'none';
+  if (dashSection) dashSection.style.display = 'none';
+  adminSection.style.display = 'block';
+
+  document.querySelectorAll('.portal-nav-link').forEach(l => l.classList.remove('active'));
+  document.getElementById('navToAdmin')?.classList.add('active');
+
+  if (localStorage.getItem('ppau_admin_logged_in') === 'true') {
+    loginPanel?.classList.remove('active');
+    dashboardPanel?.classList.add('active');
+    loadAdminDashboard();
+  } else {
+    loginPanel?.classList.add('active');
+    dashboardPanel?.classList.remove('active');
+  }
+}
+
+async function handleAdminLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('adminEmail').value.trim();
+  const password = document.getElementById('adminPassword').value;
+
+  if (!email || !password) {
+    showPortalNotification('Please enter your admin credentials.', 'error');
+    return;
+  }
+
+  const btn = e.target.querySelector('button[type="submit"]');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><circle cx="12" cy="12" r="10"/></svg> Signing in...';
+  btn.disabled = true;
+
+  try {
+    const data = await apiCall('/api/admin/login', 'POST', { email, password });
+    localStorage.setItem('ppau_admin_logged_in', 'true');
+    localStorage.setItem('ppau_admin_token', data.token);
+    showAdminPanel();
+    showPortalNotification('Admin portal access granted.', 'success');
+  } catch (err) {
+    showPortalNotification(err.message || 'Admin login failed.', 'error');
+  } finally {
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+  }
+}
+
+async function loadAdminDashboard() {
+  const token = localStorage.getItem('ppau_admin_token');
+  if (!token) return;
+
+  try {
+    const [registrations, payments] = await Promise.all([
+      apiCall(`/api/admin/registrations?token=${token}`),
+      apiCall(`/api/admin/payments?token=${token}`),
+    ]);
+
+    renderAdminRegistrations(registrations.registrations || []);
+    renderAdminPayments(payments.payments || []);
+  } catch (err) {
+    showPortalNotification(err.message || 'Could not load admin review queue.', 'error');
+  }
+}
+
+function renderAdminRegistrations(registrations) {
+  const list = document.getElementById('adminRegistrationsList');
+  if (!list) return;
+
+  if (!registrations.length) {
+    list.innerHTML = '<div class="admin-empty">No registrations pending review.</div>';
+    return;
+  }
+
+  list.innerHTML = registrations.map(reg => {
+    const statusLabel = reg.approvalStatus === 'approved' ? 'Approved' : reg.status === 'active' ? 'Active' : 'Pending';
+    const action = reg.approvalStatus === 'approved'
+      ? '<span class="admin-pill">Approved</span>'
+      : `<button class="btn btn-primary btn-sm" onclick="approveRegistration('${reg.memberId}')">Approve</button>`;
+
+    return `
+      <div class="admin-item">
+        <h5>${reg.firstName} ${reg.lastName}</h5>
+        <p>${reg.email} • ${reg.practiceType || 'Member'} • ${reg.phone || ''}</p>
+        <div class="admin-item-actions">
+          <span class="admin-pill">${statusLabel}</span>
+          ${action}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderAdminPayments(payments) {
+  const list = document.getElementById('adminPaymentsList');
+  if (!list) return;
+
+  if (!payments.length) {
+    list.innerHTML = '<div class="admin-empty">No payments pending verification.</div>';
+    return;
+  }
+
+  list.innerHTML = payments.map(payment => {
+    const statusLabel = payment.status === 'verified' ? 'Verified' : payment.status === 'completed' ? 'Completed' : 'Pending';
+    const action = payment.status === 'verified'
+      ? '<span class="admin-pill">Verified</span>'
+      : `<button class="btn btn-primary btn-sm" onclick="verifyPayment('${payment.paymentId}')">Verify</button>`;
+
+    return `
+      <div class="admin-item">
+        <h5>${payment.memberId}</h5>
+        <p>${payment.paymentMethod || 'Payment'} • UGX ${Number(payment.amount || 0).toLocaleString()} • ${payment.reference || 'No reference'}</p>
+        <div class="admin-item-actions">
+          <span class="admin-pill">${statusLabel}</span>
+          ${action}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function approveRegistration(memberId) {
+  const token = localStorage.getItem('ppau_admin_token');
+  if (!token) return;
+
+  try {
+    await apiCall(`/api/admin/registrations/${memberId}/approve?token=${token}`, 'POST');
+    showPortalNotification('Registration approved.', 'success');
+    loadAdminDashboard();
+  } catch (err) {
+    showPortalNotification(err.message || 'Could not approve registration.', 'error');
+  }
+}
+
+async function verifyPayment(paymentId) {
+  const token = localStorage.getItem('ppau_admin_token');
+  if (!token) return;
+
+  try {
+    await apiCall(`/api/admin/payments/${paymentId}/verify?token=${token}`, 'POST');
+    showPortalNotification('Payment verified and member activated.', 'success');
+    loadAdminDashboard();
+  } catch (err) {
+    showPortalNotification(err.message || 'Could not verify payment.', 'error');
+  }
+}
+
+function logoutAdmin() {
+  localStorage.removeItem('ppau_admin_logged_in');
+  localStorage.removeItem('ppau_admin_token');
+  showPanel('login');
+  showPortalNotification('Admin session closed.', 'info');
+}
+
 // Show dashboard
 function showDashboard() {
   const authSection = document.getElementById('authSection');
   const dashSection = document.getElementById('dashboardSection');
+  const adminSection = document.getElementById('adminSection');
 
   if (!authSection || !dashSection) return;
 
   authSection.style.display = 'none';
   dashSection.style.display = 'block';
+  if (adminSection) adminSection.style.display = 'none';
 
   // Update nav
   document.querySelectorAll('.portal-nav-link').forEach(l => l.classList.remove('active'));
@@ -672,11 +865,15 @@ function logout() {
   localStorage.removeItem('ppau_user_fullname');
   localStorage.removeItem('ppau_member_id');
   localStorage.removeItem('ppau_user_email');
+  localStorage.removeItem('ppau_admin_logged_in');
+  localStorage.removeItem('ppau_admin_token');
 
   const authSection = document.getElementById('authSection');
   const dashSection = document.getElementById('dashboardSection');
+  const adminSection = document.getElementById('adminSection');
 
   if (dashSection) dashSection.style.display = 'none';
+  if (adminSection) adminSection.style.display = 'none';
   if (authSection) authSection.style.display = '';
 
   // Reset nav

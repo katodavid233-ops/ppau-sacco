@@ -8,26 +8,26 @@
 }
 
 :root {
-  --green-900: #064e2a;
-  --green-800: #0a6e3a;
-  --green-700: #0d9148;
-  --green-600: #10b956;
-  --green-500: #22c55e;
-  --green-400: #4ade80;
-  --green-100: #dcfce7;
-  --green-50: #f0fdf4;
+  --green-900: #0c1e4a;
+  --green-800: #1e3a8a;
+  --green-700: #1d4ed8;
+  --green-600: #2563eb;
+  --green-500: #3b82f6;
+  --green-400: #60a5fa;
+  --green-100: #dbeafe;
+  --green-50: #eff6ff;
 
   --blue-700: #1d4ed8;
   --blue-500: #3b82f6;
   --blue-100: #dbeafe;
 
-  --purple-700: #6d28d9;
-  --purple-500: #8b5cf6;
-  --purple-100: #ede9fe;
+  --purple-700: #4338ca;
+  --purple-500: #6366f1;
+  --purple-100: #e0e7ff;
 
-  --orange-700: #b45309;
-  --orange-500: #f59e0b;
-  --orange-100: #fef3c7;
+  --orange-700: #1e40af;
+  --orange-500: #60a5fa;
+  --orange-100: #eff6ff;
 
   --gray-900: #111827;
   --gray-800: #1f2937;
@@ -322,7 +322,7 @@ img {
 .hero-bg {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #042a18 0%, #0a6e3a 40%, #0d9148 70%, #064e2a 100%);
+  background: linear-gradient(135deg, #0c1e4a 0%, #1e3a8a 40%, #1d4ed8 70%, #0c1e4a 100%);
 }
 
 .hero-overlay {
@@ -372,7 +372,7 @@ img {
 }
 
 .hero h1 .highlight {
-  background: linear-gradient(135deg, var(--green-400), #86efac);
+  background: linear-gradient(135deg, var(--green-400), #93c5fd);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -1545,7 +1545,7 @@ img {
 .portal-auth-sidebar {
   width: 380px;
   min-width: 380px;
-  background: linear-gradient(135deg, #042a18 0%, #0a6e3a 60%, #0d9148 100%);
+  background: linear-gradient(135deg, #0c1e4a 0%, #1e3a8a 60%, #1d4ed8 100%);
   color: var(--white);
   padding: 48px 36px;
   display: flex;
@@ -2312,6 +2312,146 @@ img {
   font-size: clamp(0.75rem, 0.8vw + 0.25rem, 0.9rem);
   color: var(--gray-500);
   margin-top: 12px;
+}
+
+/* ===== ADMIN PORTAL ===== */
+.portal-admin {
+  padding: 110px 24px 48px;
+  min-height: 100vh;
+  background: var(--gray-50);
+}
+
+.admin-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  gap: 24px;
+}
+
+.admin-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-xl);
+  padding: 24px 28px;
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-intro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.admin-intro h2 {
+  font-size: clamp(1.3rem, 1.5vw + 0.6rem, 1.8rem);
+  color: var(--gray-900);
+  margin: 8px 0 6px;
+}
+
+.admin-intro p {
+  color: var(--gray-600);
+}
+
+.admin-badge {
+  padding: 10px 14px;
+  border-radius: var(--radius-full);
+  background: var(--green-50);
+  color: var(--green-800);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.admin-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.admin-toolbar h3 {
+  font-size: 1.15rem;
+  margin-bottom: 4px;
+  color: var(--gray-900);
+}
+
+.admin-toolbar p {
+  color: var(--gray-500);
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.admin-panel-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.admin-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.admin-panel-header h4 {
+  color: var(--gray-900);
+}
+
+.admin-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: var(--radius-full);
+  background: var(--gray-100);
+  color: var(--gray-700);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.admin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-item {
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 14px;
+  background: var(--gray-50);
+}
+
+.admin-item h5 {
+  color: var(--gray-900);
+  margin-bottom: 4px;
+}
+
+.admin-item p {
+  font-size: 0.85rem;
+  color: var(--gray-600);
+  margin-bottom: 8px;
+}
+
+.admin-item-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-empty {
+  padding: 16px;
+  border: 1px dashed var(--gray-300);
+  border-radius: var(--radius);
+  color: var(--gray-500);
+  text-align: center;
+  background: var(--white);
 }
 
 /* ===== DASHBOARD ===== */

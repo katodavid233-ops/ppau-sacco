@@ -32,6 +32,7 @@
         <a href="index.html" class="portal-nav-link">Home</a>
         <a href="#register" class="portal-nav-link active" id="navToRegister">Register</a>
         <a href="#login" class="portal-nav-link" id="navToLogin">Login</a>
+        <a href="#admin" class="portal-nav-link" id="navToAdmin">Admin</a>
         <a href="#payments" class="portal-nav-link" id="navToPayments" style="display:none">Payments</a>
         <a href="#dashboard" class="portal-nav-link" id="navToDashboard" style="display:none">Dashboard</a>
       </div>
@@ -558,6 +559,61 @@
               I've Completed Payment - Confirm
             </button>
             <p class="payment-note">After payment, click the button above. Our team will verify your payment within 24-48 hours and activate your account.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ADMIN PORTAL (hidden by default) -->
+  <section class="portal-admin" id="adminSection" style="display:none">
+    <div class="admin-shell">
+      <div class="admin-card admin-intro">
+        <div>
+          <span class="section-tag">Admin Review</span>
+          <h2>Membership approval and payment verification</h2>
+          <p>Review new member applications and verify payment evidence before activating accounts.</p>
+        </div>
+        <div class="admin-badge">Secure internal access</div>
+      </div>
+
+      <div class="auth-form-panel active" id="adminLoginPanel">
+        <form id="adminLoginForm" class="auth-form">
+          <div class="form-group">
+            <label for="adminEmail">Admin Email</label>
+            <input type="email" id="adminEmail" placeholder="admin@ppausacco.org" required />
+          </div>
+          <div class="form-group">
+            <label for="adminPassword">Admin Password</label>
+            <input type="password" id="adminPassword" placeholder="Enter admin password" required />
+          </div>
+          <button type="submit" class="btn btn-primary btn-full btn-lg">Access Admin Portal</button>
+        </form>
+      </div>
+
+      <div class="auth-form-panel" id="adminDashboardPanel">
+        <div class="admin-toolbar">
+          <div>
+            <h3>Approval queue</h3>
+            <p>Approve registrations and verify payments quickly.</p>
+          </div>
+          <button type="button" class="btn btn-outline-dark" onclick="logoutAdmin()">Logout</button>
+        </div>
+
+        <div class="admin-grid">
+          <div class="admin-panel-card">
+            <div class="admin-panel-header">
+              <h4>Pending registrations</h4>
+              <span class="admin-pill">Review</span>
+            </div>
+            <div id="adminRegistrationsList" class="admin-list"></div>
+          </div>
+          <div class="admin-panel-card">
+            <div class="admin-panel-header">
+              <h4>Pending payments</h4>
+              <span class="admin-pill">Verify</span>
+            </div>
+            <div id="adminPaymentsList" class="admin-list"></div>
           </div>
         </div>
       </div>

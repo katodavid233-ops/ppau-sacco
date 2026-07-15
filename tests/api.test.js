@@ -53,7 +53,34 @@ async function main() {
   assert.strictEqual(paymentResult.response.status, 201, 'Payment confirmation should succeed');
   assert.ok(paymentResult.body.paymentId, 'Payment confirmation should return a paymentId');
 
-  console.log('API registration and payment flow verified successfully.');
+  const adminLoginResult = await request('/api/admin/login', {
+    method: 'POST',
+    body: JSON.stringify({
+      email: 'admin@ppausacco.org',
+      password: 'Admin@2026!',
+    }),
+  });
+
+  assert.strictEqual(adminLoginResult.response.status, 200, 'Admin login should succeed');
+  assert.ok(adminLoginResult.body.token, 'Admin login should return a token');
+
+  const adminRegistrationsResult = await request(`/api/admin/registrations?token=${adminLoginResult.body.token}`);
+  assert.strictEqual(adminRegistrationsResult.response.status, 200, 'Admin registration review endpoint should work');
+
+  const adminApproveResult = await request(`/api/admin/registrations/${registerResult.body.memberId}/approve?token=${adminLoginResult.body.token}`, {
+    method: 'POST',
+  });
+  assert.strictEqual(adminApproveResult.response.status, 200, 'Admin member approval should succeed');
+
+  const adminPaymentsResult = await request(`/api/admin/payments?token=${adminLoginResult.body.token}`);
+  assert.strictEqual(adminPaymentsResult.response.status, 200, 'Admin payment review endpoint should work');
+
+  const adminVerifyResult = await request(`/api/admin/payments/${paymentResult.body.paymentId}/verify?token=${adminLoginResult.body.token}`, {
+    method: 'POST',
+  });
+  assert.strictEqual(adminVerifyResult.response.status, 200, 'Admin payment verification should succeed');
+
+  console.log('API registration, admin approval, and payment verification flow verified successfully.');
 }
 
 main().catch((error) => {

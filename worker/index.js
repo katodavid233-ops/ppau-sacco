@@ -35,6 +35,36 @@ export default {
         }
         return jsonResponse({ error: 'Method not allowed', expected: 'POST' }, 405, corsHeaders);
       }
+      if (normalizedPath === '/api/admin/login') {
+        if (request.method === 'POST') {
+          return await handleAdminLogin(request, env, corsHeaders);
+        }
+        return jsonResponse({ error: 'Method not allowed', expected: 'POST' }, 405, corsHeaders);
+      }
+      if (normalizedPath === '/api/admin/registrations') {
+        if (request.method === 'GET') {
+          return await handleAdminRegistrations(request, env, corsHeaders);
+        }
+        return jsonResponse({ error: 'Method not allowed', expected: 'GET' }, 405, corsHeaders);
+      }
+      if (normalizedPath.startsWith('/api/admin/registrations/') && normalizedPath.endsWith('/approve')) {
+        if (request.method === 'POST') {
+          return await handleApproveRegistration(request, env, corsHeaders);
+        }
+        return jsonResponse({ error: 'Method not allowed', expected: 'POST' }, 405, corsHeaders);
+      }
+      if (normalizedPath === '/api/admin/payments') {
+        if (request.method === 'GET') {
+          return await handleAdminPayments(request, env, corsHeaders);
+        }
+        return jsonResponse({ error: 'Method not allowed', expected: 'GET' }, 405, corsHeaders);
+      }
+      if (normalizedPath.startsWith('/api/admin/payments/') && normalizedPath.endsWith('/verify')) {
+        if (request.method === 'POST') {
+          return await handleVerifyPayment(request, env, corsHeaders);
+        }
+        return jsonResponse({ error: 'Method not allowed', expected: 'POST' }, 405, corsHeaders);
+      }
       if (normalizedPath === '/api/payment/confirm') {
         if (request.method === 'POST') {
           return await handlePaymentConfirm(request, env, corsHeaders);
@@ -117,6 +147,28 @@ function generateToken() {
 function hashPassword(password) {
   return crypto.subtle.digest('SHA-256', new TextEncoder().encode(password))
     .then(buf => Array.from(new Uint8Array(buf), b => b.toString(16).padStart(2, '0')).join(''));
+}
+
+function getAdminCredentials(env) {
+  return {
+    email: env.ADMIN_EMAIL || 'admin@ppausacco.org',
+    password: env.ADMIN_PASSWORD || 'Admin@2026!',
+  };
+}
+
+async function ensureAdmin(request, env, corsHeaders) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get('token');
+  if (!token) {
+    return { error: jsonResponse({ error: 'Admin token required' }, 401, corsHeaders) };
+  }
+
+  const adminEmail = await env.MEMBERS_KV.get(`admin_token:${token}`);
+  if (!adminEmail) {
+    return { error: jsonResponse({ error: 'Unauthorized admin access' }, 401, corsHeaders) };
+  }
+
+  return { adminEmail };
 }
 
 // ===== REGISTRATION =====
@@ -258,6 +310,127 @@ async function handleLogin(request, env, corsHeaders) {
       totalShares: member.totalShares,
     }
   }, 200, corsHeaders);
+}
+
+// ===== ADMIN LOGIN =====
+
+async function handleAdminLogin(request, env, corsHeaders) {
+  const body = await request.json();
+  const { email, password } = body;
+  const admin = getAdminCredentials(env);
+
+  if (!email || !password) {
+    return jsonResponse({ error: 'Admin email and password are required' }, 400, corsHeaders);
+  }
+
+  if (email !== admin.email || password !== admin.password) {
+    return jsonResponse({ error: 'Invalid admin credentials' }, 401, corsHeaders);
+  }
+
+  const token = generateToken();
+  await env.MEMBERS_KV.put(`admin_token:${token}`, admin.email, { expirationTtl: 86400 * 8 });
+
+  return jsonResponse({ success: true, token, admin: { email: admin.email } }, 200, corsHeaders);
+}
+
+async function handleAdminRegistrations(request, env, corsHeaders) {
+  const adminAuth = await ensureAdmin(request, env, corsHeaders);
+  if (adminAuth.error) return adminAuth.error;
+
+  const listResult = await env.MEMBERS_KV.list({ prefix: 'member:' });
+  const registrations = [];
+
+  for (const item of listResult.keys) {
+    const memberData = await env.MEMBERS_KV.get(item.name);
+    if (!memberData) continue;
+
+    const member = JSON.parse(memberData);
+    if (member.role !== 'member') continue;
+
+    if (member.status === 'pending_payment' || member.status === 'approved_pending_payment' || member.status === 'pending_verification' || member.status === 'active') {
+      registrations.push({
+        memberId: member.memberId,
+        firstName: member.firstName,
+        lastName: member.lastName,
+        email: member.email,
+        phone: member.phone,
+        practiceType: member.practiceType,
+        status: member.status,
+        approvalStatus: member.approvalStatus || 'pending',
+      });
+    }
+  }
+
+  return jsonResponse({ success: true, registrations }, 200, corsHeaders);
+}
+
+async function handleApproveRegistration(request, env, corsHeaders) {
+  const adminAuth = await ensureAdmin(request, env, corsHeaders);
+  if (adminAuth.error) return adminAuth.error;
+
+  const url = new URL(request.url);
+  const segments = url.pathname.split('/').filter(Boolean);
+  const memberId = segments[segments.length - 2];
+
+  const memberData = await env.MEMBERS_KV.get(`member:${memberId}`);
+  if (!memberData) {
+    return jsonResponse({ error: 'Member not found' }, 404, corsHeaders);
+  }
+
+  const member = JSON.parse(memberData);
+  member.approvalStatus = 'approved';
+  member.status = member.status === 'active' ? 'active' : 'approved_pending_payment';
+  await env.MEMBERS_KV.put(`member:${member.memberId}`, JSON.stringify(member));
+
+  return jsonResponse({ success: true, message: 'Registration approved', memberId: member.memberId }, 200, corsHeaders);
+}
+
+async function handleAdminPayments(request, env, corsHeaders) {
+  const adminAuth = await ensureAdmin(request, env, corsHeaders);
+  if (adminAuth.error) return adminAuth.error;
+
+  const listResult = await env.MEMBERS_KV.list({ prefix: 'payment:' });
+  const payments = [];
+
+  for (const item of listResult.keys) {
+    const paymentData = await env.MEMBERS_KV.get(item.name);
+    if (!paymentData) continue;
+    payments.push(JSON.parse(paymentData));
+  }
+
+  return jsonResponse({ success: true, payments }, 200, corsHeaders);
+}
+
+async function handleVerifyPayment(request, env, corsHeaders) {
+  const adminAuth = await ensureAdmin(request, env, corsHeaders);
+  if (adminAuth.error) return adminAuth.error;
+
+  const url = new URL(request.url);
+  const segments = url.pathname.split('/').filter(Boolean);
+  const paymentId = segments[segments.length - 2];
+
+  const paymentData = await env.MEMBERS_KV.get(`payment:${paymentId}`);
+  if (!paymentData) {
+    return jsonResponse({ error: 'Payment not found' }, 404, corsHeaders);
+  }
+
+  const payment = JSON.parse(paymentData);
+  payment.status = 'verified';
+  payment.verifiedAt = new Date().toISOString();
+  payment.verifiedBy = adminAuth.adminEmail;
+  await env.MEMBERS_KV.put(`payment:${payment.paymentId}`, JSON.stringify(payment));
+
+  const memberData = await env.MEMBERS_KV.get(`member:${payment.memberId}`);
+  if (memberData) {
+    const member = JSON.parse(memberData);
+    member.approvalStatus = member.approvalStatus || 'approved';
+    member.status = 'active';
+    member.totalShares = Math.max(member.totalShares || 0, 10);
+    member.totalSavings = Number(member.totalSavings || 0) + Number(payment.amount || 0);
+    await env.MEMBERS_KV.put(`member:${member.memberId}`, JSON.stringify(member));
+  }
+
+  return jsonResponse({ success: true, message: 'Payment verified', paymentId }, 200, corsHeaders);
 }
 
 // ===== PAYMENT CONFIRMATION (Bank / Airtel / MoMo) =====

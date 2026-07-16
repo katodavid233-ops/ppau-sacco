@@ -53,6 +53,30 @@ export default {
         }
         return jsonResponse({ error: 'Method not allowed', expected: 'POST' }, 405, corsHeaders);
       }
+      if (normalizedPath === '/api/admin/stats') {
+        if (request.method === 'GET') {
+          return await handleAdminStats(request, env, corsHeaders);
+        }
+        return jsonResponse({ error: 'Method not allowed', expected: 'GET' }, 405, corsHeaders);
+      }
+      if (normalizedPath === '/api/admin/members') {
+        if (request.method === 'GET') {
+          return await handleAdminMembers(request, env, corsHeaders);
+        }
+        return jsonResponse({ error: 'Method not allowed', expected: 'GET' }, 405, corsHeaders);
+      }
+      if (normalizedPath.startsWith('/api/admin/members/') && !normalizedPath.includes('/reject') && !normalizedPath.includes('/approve')) {
+        if (request.method === 'GET') {
+          return await handleAdminMemberDetail(request, env, corsHeaders);
+        }
+        return jsonResponse({ error: 'Method not allowed', expected: 'GET' }, 405, corsHeaders);
+      }
+      if (normalizedPath.startsWith('/api/admin/registrations/') && normalizedPath.endsWith('/reject')) {
+        if (request.method === 'POST') {
+          return await handleRejectRegistration(request, env, corsHeaders);
+        }
+        return jsonResponse({ error: 'Method not allowed', expected: 'POST' }, 405, corsHeaders);
+      }
       if (normalizedPath === '/api/admin/payments') {
         if (request.method === 'GET') {
           return await handleAdminPayments(request, env, corsHeaders);
@@ -357,6 +381,9 @@ async function handleAdminRegistrations(request, env, corsHeaders) {
         practiceType: member.practiceType,
         status: member.status,
         approvalStatus: member.approvalStatus || 'pending',
+        joinedAt: member.joinedAt,
+        nin: member.nin,
+        licenseNumber: member.licenseNumber,
       });
     }
   }
@@ -383,6 +410,162 @@ async function handleApproveRegistration(request, env, corsHeaders) {
   await env.MEMBERS_KV.put(`member:${member.memberId}`, JSON.stringify(member));
 
   return jsonResponse({ success: true, message: 'Registration approved', memberId: member.memberId }, 200, corsHeaders);
+}
+
+async function handleRejectRegistration(request, env, corsHeaders) {
+  const adminAuth = await ensureAdmin(request, env, corsHeaders);
+  if (adminAuth.error) return adminAuth.error;
+
+  const url = new URL(request.url);
+  const segments = url.pathname.split('/').filter(Boolean);
+  const memberId = segments[segments.length - 2];
+
+  const memberData = await env.MEMBERS_KV.get(`member:${memberId}`);
+  if (!memberData) {
+    return jsonResponse({ error: 'Member not found' }, 404, corsHeaders);
+  }
+
+  const member = JSON.parse(memberData);
+  member.approvalStatus = 'rejected';
+  member.status = 'rejected';
+  member.rejectedAt = new Date().toISOString();
+  member.rejectedBy = adminAuth.adminEmail;
+  await env.MEMBERS_KV.put(`member:${member.memberId}`, JSON.stringify(member));
+
+  return jsonResponse({ success: true, message: 'Registration rejected', memberId: member.memberId }, 200, corsHeaders);
+}
+
+async function handleAdminStats(request, env, corsHeaders) {
+  const adminAuth = await ensureAdmin(request, env, corsHeaders);
+  if (adminAuth.error) return adminAuth.error;
+
+  const memberList = await env.MEMBERS_KV.list({ prefix: 'member:' });
+  const paymentList = await env.MEMBERS_KV.list({ prefix: 'payment:' });
+
+  let totalMembers = 0;
+  let pendingApproval = 0;
+  let pendingPayment = 0;
+  let activeMembers = 0;
+  let totalSavings = 0;
+  let totalShares = 0;
+
+  for (const key of memberList.keys) {
+    const data = await env.MEMBERS_KV.get(key.name);
+    if (!data) continue;
+    const member = JSON.parse(data);
+    if (member.role !== 'member') continue;
+    totalMembers++;
+    if (member.status === 'active') activeMembers++;
+    if (member.approvalStatus === 'pending' || !member.approvalStatus) pendingApproval++;
+    if (member.status === 'pending_payment' || member.status === 'pending_verification') pendingPayment++;
+    totalSavings += Number(member.totalSavings || 0);
+    totalShares += Number(member.totalShares || 0);
+  }
+
+  let totalPayments = 0;
+  let pendingPayments = 0;
+  let verifiedPayments = 0;
+
+  for (const key of paymentList.keys) {
+    const data = await env.MEMBERS_KV.get(key.name);
+    if (!data) continue;
+    const payment = JSON.parse(data);
+    totalPayments++;
+    if (payment.status === 'pending_verification') pendingPayments++;
+    if (payment.status === 'verified' || payment.status === 'completed') verifiedPayments++;
+  }
+
+  return jsonResponse({
+    success: true,
+    stats: {
+      totalMembers,
+      pendingApproval,
+      pendingPayment,
+      activeMembers,
+      totalSavings,
+      totalShares,
+      totalPayments,
+      pendingPayments,
+      verifiedPayments,
+    }
+  }, 200, corsHeaders);
+}
+
+async function handleAdminMembers(request, env, corsHeaders) {
+  const adminAuth = await ensureAdmin(request, env, corsHeaders);
+  if (adminAuth.error) return adminAuth.error;
+
+  const memberList = await env.MEMBERS_KV.list({ prefix: 'member:' });
+  const members = [];
+
+  for (const key of memberList.keys) {
+    const data = await env.MEMBERS_KV.get(key.name);
+    if (!data) continue;
+    const member = JSON.parse(data);
+    if (member.role !== 'member') continue;
+    members.push({
+      memberId: member.memberId,
+      firstName: member.firstName,
+      lastName: member.lastName,
+      email: member.email,
+      phone: member.phone,
+      gender: member.gender,
+      practiceType: member.practiceType,
+      employer: member.employer,
+      location: member.location,
+      memberType: member.memberType,
+      status: member.status,
+      approvalStatus: member.approvalStatus || 'pending',
+      totalSavings: member.totalSavings || 0,
+      totalShares: member.totalShares || 0,
+      joinedAt: member.joinedAt,
+      lastLogin: member.lastLogin,
+      rejectedAt: member.rejectedAt,
+      rejectedBy: member.rejectedBy,
+      nin: member.nin,
+      licenseNumber: member.licenseNumber,
+      salaryRange: member.salaryRange,
+      nextOfKin: member.nextOfKin,
+      nextOfKinPhone: member.nextOfKinPhone,
+      monthlyContribution: member.monthlyContribution,
+    });
+  }
+
+  return jsonResponse({ success: true, members }, 200, corsHeaders);
+}
+
+async function handleAdminMemberDetail(request, env, corsHeaders) {
+  const adminAuth = await ensureAdmin(request, env, corsHeaders);
+  if (adminAuth.error) return adminAuth.error;
+
+  const url = new URL(request.url);
+  const segments = url.pathname.split('/').filter(Boolean);
+  const memberId = segments[segments.length - 1];
+
+  const memberData = await env.MEMBERS_KV.get(`member:${memberId}`);
+  if (!memberData) {
+    return jsonResponse({ error: 'Member not found' }, 404, corsHeaders);
+  }
+
+  const member = JSON.parse(memberData);
+  delete member.passwordHash;
+
+  // Get payment history
+  const paymentsKey = `payments:${memberId}`;
+  const paymentIdsRaw = await env.MEMBERS_KV.get(paymentsKey);
+  let payments = [];
+  if (paymentIdsRaw) {
+    const paymentIds = JSON.parse(paymentIdsRaw);
+    payments = await Promise.all(
+      paymentIds.map(async (id) => {
+        const pData = await env.MEMBERS_KV.get(`payment:${id}`);
+        return pData ? JSON.parse(pData) : null;
+      })
+    );
+    payments = payments.filter(Boolean);
+  }
+
+  return jsonResponse({ success: true, member, payments }, 200, corsHeaders);
 }
 
 async function handleAdminPayments(request, env, corsHeaders) {

@@ -1581,3 +1581,430 @@ function showPortalNotification(message, type = 'info') {
   startProgress();
   scheduleNext();
 })();
+
+// ==================================================================
+// ADMIN PORTAL (standalone admin.html)
+// ==================================================================
+
+let allMembers = [];
+let allRegistrations = [];
+let allPayments = [];
+let currentAdminTab = 'registrations';
+
+function initAdminPortal() {
+  const loginSection = document.getElementById('adminLoginSection');
+  if (!loginSection) return;
+
+  if (localStorage.getItem('ppau_admin_logged_in') === 'true') {
+    showAdminDashboard();
+  }
+}
+
+async function handleAdminPortalLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('adminLoginEmail').value.trim();
+  const password = document.getElementById('adminLoginPassword').value;
+
+  if (!email || !password) {
+    showAdminToast('Please enter your credentials.', 'error');
+    return;
+  }
+
+  const btn = e.target.querySelector('button[type="submit"]');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><circle cx="12" cy="12" r="10"/></svg> Signing in...';
+  btn.disabled = true;
+
+  try {
+    const data = await apiCall('/api/admin/login', 'POST', { email, password });
+    localStorage.setItem('ppau_admin_logged_in', 'true');
+    localStorage.setItem('ppau_admin_token', data.token);
+    localStorage.setItem('ppau_admin_email', email);
+    showAdminDashboard();
+    showAdminToast('Admin access granted.', 'success');
+  } catch (err) {
+    showAdminToast(err.message || 'Login failed.', 'error');
+  } finally {
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+  }
+}
+
+function showAdminDashboard() {
+  const loginSection = document.getElementById('adminLoginSection');
+  const dashSection = document.getElementById('adminDashboardSection');
+
+  if (loginSection) loginSection.style.display = 'none';
+  if (dashSection) dashSection.style.display = 'block';
+
+  const email = localStorage.getItem('ppau_admin_email') || 'admin@ppausacco.org';
+  const badge = document.getElementById('adminEmailBadge');
+  if (badge) badge.textContent = email;
+
+  loadAdminData();
+}
+
+function adminLogout() {
+  localStorage.removeItem('ppau_admin_logged_in');
+  localStorage.removeItem('ppau_admin_token');
+  localStorage.removeItem('ppau_admin_email');
+
+  const loginSection = document.getElementById('adminLoginSection');
+  const dashSection = document.getElementById('adminDashboardSection');
+
+  if (dashSection) dashSection.style.display = 'none';
+  if (loginSection) loginSection.style.display = '';
+}
+
+async function loadAdminData() {
+  const token = localStorage.getItem('ppau_admin_token');
+  if (!token) return;
+
+  try {
+    const [statsRes, membersRes, regRes, payRes] = await Promise.all([
+      apiCall(`/api/admin/stats?token=${token}`),
+      apiCall(`/api/admin/members?token=${token}`),
+      apiCall(`/api/admin/registrations?token=${token}`),
+      apiCall(`/api/admin/payments?token=${token}`),
+    ]);
+
+    const stats = statsRes.stats || {};
+    allMembers = membersRes.members || [];
+    allRegistrations = regRes.registrations || [];
+    allPayments = payRes.payments || [];
+
+    // Update stats
+    document.getElementById('statTotalMembers').textContent = stats.totalMembers || allMembers.length;
+    document.getElementById('statPendingApproval').textContent = stats.pendingApproval || 0;
+    document.getElementById('statPendingPayment').textContent = stats.pendingPayments || stats.pendingPayment || 0;
+    document.getElementById('statActiveMembers').textContent = stats.activeMembers || 0;
+
+    // Update tab counts
+    document.getElementById('tabRegCount').textContent = allRegistrations.length;
+    document.getElementById('tabPayCount').textContent = allPayments.length;
+    document.getElementById('tabMemCount').textContent = allMembers.length;
+
+    renderRegistrationsTable(allRegistrations);
+    renderPaymentsTable(allPayments);
+    renderAllMembersTable(allMembers);
+  } catch (err) {
+    showAdminToast(err.message || 'Could not load admin data.', 'error');
+  }
+}
+
+function switchAdminTab(tab) {
+  currentAdminTab = tab;
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector(`.admin-tab[data-tab="${tab}"]`)?.classList.add('active');
+
+  if (tab === 'registrations') document.getElementById('adminTabRegistrations')?.classList.add('active');
+  if (tab === 'payments') document.getElementById('adminTabPayments')?.classList.add('active');
+  if (tab === 'allmembers') document.getElementById('adminTabAllMembers')?.classList.add('active');
+}
+
+function handleAdminSearch() {
+  const query = document.getElementById('adminSearchInput').value.toLowerCase().trim();
+  const filtered = allMembers.filter(m =>
+    (m.firstName || '').toLowerCase().includes(query) ||
+    (m.lastName || '').toLowerCase().includes(query) ||
+    (m.email || '').toLowerCase().includes(query) ||
+    (m.memberId || '').toLowerCase().includes(query) ||
+    (m.phone || '').includes(query)
+  );
+
+  if (currentAdminTab === 'registrations') {
+    renderRegistrationsTable(allRegistrations.filter(r =>
+      (r.firstName || '').toLowerCase().includes(query) ||
+      (r.lastName || '').toLowerCase().includes(query) ||
+      (r.email || '').toLowerCase().includes(query) ||
+      (r.memberId || '').toLowerCase().includes(query)
+    ));
+  } else if (currentAdminTab === 'payments') {
+    renderPaymentsTable(allPayments.filter(p =>
+      (p.memberId || '').toLowerCase().includes(query) ||
+      (p.paymentId || '').toLowerCase().includes(query) ||
+      (p.reference || '').toLowerCase().includes(query)
+    ));
+  } else {
+    renderAllMembersTable(filtered);
+  }
+}
+
+function handleAdminFilter() {
+  const status = document.getElementById('adminStatusFilter').value;
+  let filtered;
+
+  if (status === 'all') {
+    filtered = allMembers;
+  } else if (status === 'rejected') {
+    filtered = allMembers.filter(m => m.status === 'rejected' || m.approvalStatus === 'rejected');
+  } else {
+    filtered = allMembers.filter(m => m.status === status);
+  }
+
+  renderAllMembersTable(filtered);
+}
+
+function renderRegistrationsTable(registrations) {
+  const tbody = document.getElementById('adminRegTableBody');
+  if (!tbody) return;
+
+  if (!registrations.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="admin-empty-cell">No registrations found.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = registrations.map(reg => {
+    const name = `${reg.firstName || ''} ${reg.lastName || ''}`.trim();
+    const statusClass = reg.approvalStatus === 'approved' ? 'status-active' :
+                        reg.approvalStatus === 'rejected' ? 'status-rejected' :
+                        reg.status === 'active' ? 'status-active' : 'status-pending';
+    const statusText = reg.approvalStatus === 'approved' ? 'Approved' :
+                       reg.approvalStatus === 'rejected' ? 'Rejected' :
+                       reg.status === 'active' ? 'Active' :
+                       reg.status === 'pending_verification' ? 'Pending Verification' :
+                       'Pending Payment';
+    const date = reg.joinedAt ? new Date(reg.joinedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+
+    const actions = reg.approvalStatus === 'approved'
+      ? '<span class="admin-status-pill approved">Approved</span>'
+      : reg.approvalStatus === 'rejected'
+      ? '<span class="admin-status-pill rejected">Rejected</span>'
+      : `<button class="btn btn-primary btn-xs" onclick="adminApproveMember('${reg.memberId}')">Approve</button>
+         <button class="btn btn-danger btn-xs" onclick="adminRejectMember('${reg.memberId}')">Reject</button>`;
+
+    return `<tr>
+      <td><strong>${name}</strong><br/><small style="color:var(--gray-500)">${reg.memberId || ''}</small></td>
+      <td>${reg.email || ''}</td>
+      <td>${reg.practiceType || '—'}</td>
+      <td><span class="admin-status-pill ${statusClass}">${statusText}</span></td>
+      <td>${date}</td>
+      <td class="admin-actions-cell">${actions}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderPaymentsTable(payments) {
+  const tbody = document.getElementById('adminPayTableBody');
+  if (!tbody) return;
+
+  if (!payments.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="admin-empty-cell">No payments found.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = payments.map(p => {
+    const statusClass = p.status === 'verified' || p.status === 'completed' ? 'status-active' : 'status-pending';
+    const statusText = p.status === 'verified' ? 'Verified' : p.status === 'completed' ? 'Completed' : 'Pending Verification';
+    const method = (p.paymentMethod || '').replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+    const amount = Number(p.amount || 0).toLocaleString('en-UG', { style: 'currency', currency: 'UGX' });
+    const date = p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+
+    const action = p.status === 'verified' || p.status === 'completed'
+      ? '<span class="admin-status-pill approved">Verified</span>'
+      : `<button class="btn btn-primary btn-xs" onclick="adminVerifyPayment('${p.paymentId}')">Verify</button>`;
+
+    return `<tr>
+      <td><small style="font-family:monospace">${p.paymentId || ''}</small></td>
+      <td>${p.memberId || ''}</td>
+      <td>${method}</td>
+      <td><strong>${amount}</strong></td>
+      <td>${p.reference || '—'}</td>
+      <td><span class="admin-status-pill ${statusClass}">${statusText}</span></td>
+      <td class="admin-actions-cell">${action}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderAllMembersTable(members) {
+  const tbody = document.getElementById('adminAllMembersTableBody');
+  if (!tbody) return;
+
+  if (!members.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="admin-empty-cell">No members found.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = members.map(m => {
+    const name = `${m.firstName || ''} ${m.lastName || ''}`.trim();
+    const statusClass = m.status === 'active' ? 'status-active' :
+                        m.status === 'rejected' || m.approvalStatus === 'rejected' ? 'status-rejected' :
+                        m.status === 'pending_verification' ? 'status-pending' :
+                        'status-pending';
+    const statusText = m.status === 'active' ? 'Active' :
+                       m.status === 'rejected' || m.approvalStatus === 'rejected' ? 'Rejected' :
+                       m.status === 'pending_verification' ? 'Pending Verification' :
+                       m.status === 'pending_payment' ? 'Pending Payment' :
+                       m.status;
+
+    return `<tr>
+      <td><small style="font-family:monospace">${m.memberId || ''}</small></td>
+      <td><strong>${name}</strong></td>
+      <td>${m.email || ''}</td>
+      <td>${m.phone || ''}</td>
+      <td>${m.practiceType || '—'}</td>
+      <td><span class="admin-status-pill ${statusClass}">${statusText}</span></td>
+      <td class="admin-actions-cell">
+        <button class="btn btn-outline-dark btn-xs" onclick="openMemberDetail('${m.memberId}')">View</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function adminApproveMember(memberId) {
+  const token = localStorage.getItem('ppau_admin_token');
+  if (!token) return;
+
+  try {
+    await apiCall(`/api/admin/registrations/${memberId}/approve?token=${token}`, 'POST');
+    showAdminToast('Registration approved successfully.', 'success');
+    loadAdminData();
+  } catch (err) {
+    showAdminToast(err.message || 'Could not approve registration.', 'error');
+  }
+}
+
+async function adminRejectMember(memberId) {
+  const token = localStorage.getItem('ppau_admin_token');
+  if (!token) return;
+
+  if (!confirm('Are you sure you want to reject this registration?')) return;
+
+  try {
+    await apiCall(`/api/admin/registrations/${memberId}/reject?token=${token}`, 'POST');
+    showAdminToast('Registration rejected.', 'success');
+    loadAdminData();
+  } catch (err) {
+    showAdminToast(err.message || 'Could not reject registration.', 'error');
+  }
+}
+
+async function adminVerifyPayment(paymentId) {
+  const token = localStorage.getItem('ppau_admin_token');
+  if (!token) return;
+
+  try {
+    await apiCall(`/api/admin/payments/${paymentId}/verify?token=${token}`, 'POST');
+    showAdminToast('Payment verified and member activated.', 'success');
+    loadAdminData();
+  } catch (err) {
+    showAdminToast(err.message || 'Could not verify payment.', 'error');
+  }
+}
+
+async function openMemberDetail(memberId) {
+  const token = localStorage.getItem('ppau_admin_token');
+  if (!token) return;
+
+  const modal = document.getElementById('memberDetailModal');
+  const body = document.getElementById('modalMemberBody');
+  const footer = document.getElementById('modalMemberFooter');
+  const title = document.getElementById('modalMemberName');
+
+  modal.style.display = 'flex';
+  body.innerHTML = '<p>Loading member details...</p>';
+  footer.innerHTML = '';
+
+  try {
+    const data = await apiCall(`/api/admin/members/${memberId}?token=${token}`);
+    const m = data.member;
+    const payments = data.payments || [];
+
+    title.textContent = `${m.firstName || ''} ${m.lastName || ''}`.trim() || m.memberId;
+
+    const statusClass = m.status === 'active' ? 'status-active' :
+                        m.status === 'rejected' ? 'status-rejected' : 'status-pending';
+
+    body.innerHTML = `
+      <div class="modal-member-grid">
+        <div class="modal-detail-group">
+          <h4>Personal Information</h4>
+          <div class="modal-detail-row"><span>Member ID:</span><strong>${m.memberId || ''}</strong></div>
+          <div class="modal-detail-row"><span>Full Name:</span><strong>${m.firstName || ''} ${m.lastName || ''}</strong></div>
+          <div class="modal-detail-row"><span>Email:</span><span>${m.email || ''}</span></div>
+          <div class="modal-detail-row"><span>Phone:</span><span>${m.phone || ''}</span></div>
+          <div class="modal-detail-row"><span>Gender:</span><span>${m.gender || ''}</span></div>
+          <div class="modal-detail-row"><span>Date of Birth:</span><span>${m.dateOfBirth || ''}</span></div>
+          <div class="modal-detail-row"><span>NIN/AHP Reg No:</span><span>${m.nin || ''}</span></div>
+        </div>
+        <div class="modal-detail-group">
+          <h4>Professional Details</h4>
+          <div class="modal-detail-row"><span>PPAU Reg No:</span><span>${m.licenseNumber || ''}</span></div>
+          <div class="modal-detail-row"><span>Practice Type:</span><span>${m.practiceType || ''}</span></div>
+          <div class="modal-detail-row"><span>Employer:</span><span>${m.employer || '—'}</span></div>
+          <div class="modal-detail-row"><span>Location:</span><span>${m.location || ''}</span></div>
+          <div class="modal-detail-row"><span>Salary Range:</span><span>${m.salaryRange || '—'}</span></div>
+          <div class="modal-detail-row"><span>Member Type:</span><span>${m.memberType || 'ordinary'}</span></div>
+        </div>
+        <div class="modal-detail-group">
+          <h4>Account Status</h4>
+          <div class="modal-detail-row"><span>Status:</span><span class="admin-status-pill ${statusClass}">${m.status || ''}</span></div>
+          <div class="modal-detail-row"><span>Approval:</span><span>${m.approvalStatus || 'pending'}</span></div>
+          <div class="modal-detail-row"><span>Total Savings:</span><strong>UGX ${(m.totalSavings || 0).toLocaleString()}</strong></div>
+          <div class="modal-detail-row"><span>Total Shares:</span><strong>${m.totalShares || 0}</strong></div>
+          <div class="modal-detail-row"><span>Monthly Contribution:</span><span>UGX ${(m.monthlyContribution || 0).toLocaleString()}</span></div>
+          <div class="modal-detail-row"><span>Joined:</span><span>${m.joinedAt ? new Date(m.joinedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'}</span></div>
+        </div>
+        <div class="modal-detail-group">
+          <h4>Next of Kin</h4>
+          <div class="modal-detail-row"><span>Name:</span><span>${m.nextOfKin || '—'}</span></div>
+          <div class="modal-detail-row"><span>Phone:</span><span>${m.nextOfKinPhone || '—'}</span></div>
+        </div>
+      </div>
+      ${payments.length ? `
+        <div class="modal-payments-section">
+          <h4>Payment History</h4>
+          <table class="admin-table modal-payments-table">
+            <thead>
+              <tr><th>Date</th><th>Method</th><th>Amount</th><th>Reference</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              ${payments.map(p => {
+                const pStatus = p.status === 'verified' || p.status === 'completed' ? 'status-active' : 'status-pending';
+                const pMethod = (p.paymentMethod || '').replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                const pAmount = Number(p.amount || 0).toLocaleString('en-UG', { style: 'currency', currency: 'UGX' });
+                const pDate = p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+                return `<tr><td>${pDate}</td><td>${pMethod}</td><td>${pAmount}</td><td>${p.reference || '—'}</td><td><span class="admin-status-pill ${pStatus}">${p.status}</span></td></tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      ` : ''}
+    `;
+
+    if (m.status !== 'active' && m.approvalStatus !== 'rejected') {
+      footer.innerHTML = `
+        <button class="btn btn-primary" onclick="adminApproveMember('${m.memberId}'); closeMemberModal();">Approve</button>
+        <button class="btn btn-danger" onclick="adminRejectMember('${m.memberId}'); closeMemberModal();">Reject</button>
+        <button class="btn btn-outline-dark" onclick="closeMemberModal()">Close</button>
+      `;
+    } else {
+      footer.innerHTML = `<button class="btn btn-outline-dark" onclick="closeMemberModal()">Close</button>`;
+    }
+  } catch (err) {
+    body.innerHTML = `<p style="color:#dc2626">${err.message || 'Could not load member details.'}</p>`;
+    footer.innerHTML = `<button class="btn btn-outline-dark" onclick="closeMemberModal()">Close</button>`;
+  }
+}
+
+function closeMemberModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('memberDetailModal').style.display = 'none';
+}
+
+function showAdminToast(message, type = 'info') {
+  const toast = document.getElementById('adminToast');
+  const msg = document.getElementById('adminToastMessage');
+  if (!toast || !msg) return;
+
+  msg.textContent = message;
+  toast.className = 'admin-toast show';
+  if (type === 'error') toast.classList.add('toast-error');
+  else if (type === 'success') toast.classList.add('toast-success');
+  else toast.classList.add('toast-info');
+
+  setTimeout(() => {
+    toast.className = 'admin-toast';
+  }, 3500);
+}

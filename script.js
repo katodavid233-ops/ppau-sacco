@@ -1401,3 +1401,183 @@ function showPortalNotification(message, type = 'info') {
     }
   }, 6000);
 }
+
+
+// ==================================================================
+// VOICES OF FINANCIAL LITERACY — TESTIMONIAL SLIDER
+// ==================================================================
+(function () {
+  const SLIDE_DURATION = 6000; // ms each slide stays visible
+  const TRANSITION_MS  = 450;  // must match CSS transition duration
+
+  const track    = document.getElementById('vsTrack');
+  const prevBtn  = document.getElementById('vsPrev');
+  const nextBtn  = document.getElementById('vsNext');
+  const dotsWrap = document.getElementById('vsDots');
+  const numEl    = document.getElementById('vsCurrentNum');
+  const bar      = document.getElementById('vsProgressBar');
+
+  if (!track) return; // not on this page
+
+  const slides = Array.from(track.querySelectorAll('.vs-slide'));
+  const dots   = dotsWrap ? Array.from(dotsWrap.querySelectorAll('.vs-dot')) : [];
+  const total  = slides.length;
+
+  let current   = 0;
+  let timer     = null;
+  let progTimer = null;
+  let progStart = null;
+  let isAnimating = false;
+
+  /* ── initial state ── */
+  slides[0].classList.add('vs-active');
+
+  /* ── progress bar ── */
+  function startProgress() {
+    if (bar) {
+      bar.style.transition = 'none';
+      bar.style.width = '0%';
+      // force reflow so the reset takes effect before we animate
+      void bar.offsetWidth;
+      bar.style.transition = `width ${SLIDE_DURATION}ms linear`;
+      bar.style.width = '100%';
+    }
+  }
+
+  function resetProgress() {
+    if (bar) {
+      bar.style.transition = 'none';
+      bar.style.width = '0%';
+    }
+  }
+
+  /* ── go to slide ── */
+  function goTo(index, direction /* 'next' | 'prev' */) {
+    if (isAnimating || index === current) return;
+    isAnimating = true;
+
+    const outSlide = slides[current];
+    const inSlide  = slides[index];
+
+    /* prepare incoming slide off-screen */
+    inSlide.style.transition = 'none';
+    inSlide.classList.remove('vs-active', 'vs-from-left');
+    if (direction === 'prev') {
+      inSlide.classList.add('vs-from-left');
+    }
+    // show it (but invisible via opacity:0 + translateX)
+    inSlide.style.display = 'flex';
+    void inSlide.offsetWidth; // reflow
+
+    /* animate outgoing slide out */
+    outSlide.style.transition = `opacity ${TRANSITION_MS}ms cubic-bezier(0.4,0,0.2,1),
+                                  transform ${TRANSITION_MS}ms cubic-bezier(0.4,0,0.2,1)`;
+    outSlide.style.opacity   = '0';
+    outSlide.style.transform = direction === 'prev' ? 'translateX(60px)' : 'translateX(-60px)';
+
+    /* animate incoming slide in */
+    inSlide.style.transition = `opacity ${TRANSITION_MS}ms cubic-bezier(0.4,0,0.2,1),
+                                 transform ${TRANSITION_MS}ms cubic-bezier(0.4,0,0.2,1)`;
+    inSlide.classList.add('vs-active');
+
+    setTimeout(() => {
+      /* clean up outgoing */
+      outSlide.classList.remove('vs-active', 'vs-from-left');
+      outSlide.style.display   = '';
+      outSlide.style.opacity   = '';
+      outSlide.style.transform = '';
+      outSlide.style.transition = '';
+
+      /* clean up incoming */
+      inSlide.classList.remove('vs-from-left');
+      inSlide.style.transition = '';
+
+      current = index;
+      updateDots();
+      updateCounter();
+      isAnimating = false;
+
+      resetProgress();
+      startProgress();
+      scheduleNext();
+    }, TRANSITION_MS + 20);
+  }
+
+  /* ── auto-advance ── */
+  function scheduleNext() {
+    clearTimeout(timer);
+    timer = setTimeout(() => goTo(nextIndex(), 'next'), SLIDE_DURATION);
+  }
+
+  function nextIndex() { return (current + 1) % total; }
+  function prevIndex() { return (current - 1 + total) % total; }
+
+  /* ── dots + counter ── */
+  function updateDots() {
+    dots.forEach((d, i) => {
+      d.classList.toggle('active', i === current);
+      d.setAttribute('aria-selected', i === current ? 'true' : 'false');
+    });
+  }
+
+  function updateCounter() {
+    if (numEl) numEl.textContent = current + 1;
+  }
+
+  /* ── event listeners ── */
+  if (nextBtn) nextBtn.addEventListener('click', () => {
+    clearTimeout(timer);
+    goTo(nextIndex(), 'next');
+  });
+
+  if (prevBtn) prevBtn.addEventListener('click', () => {
+    clearTimeout(timer);
+    goTo(prevIndex(), 'prev');
+  });
+
+  dots.forEach((dot, i) => {
+    dot.addEventListener('click', () => {
+      if (i === current) return;
+      clearTimeout(timer);
+      goTo(i, i > current ? 'next' : 'prev');
+    });
+  });
+
+  /* Pause on hover */
+  const slider = document.getElementById('voicesSlider');
+  if (slider) {
+    slider.addEventListener('mouseenter', () => {
+      clearTimeout(timer);
+      resetProgress();
+    });
+    slider.addEventListener('mouseleave', () => {
+      startProgress();
+      scheduleNext();
+    });
+  }
+
+  /* Touch / swipe support */
+  let touchStartX = 0;
+  track.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+  track.addEventListener('touchend', e => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) {
+      clearTimeout(timer);
+      goTo(diff > 0 ? nextIndex() : prevIndex(), diff > 0 ? 'next' : 'prev');
+    }
+  }, { passive: true });
+
+  /* Keyboard support when focused */
+  if (slider) {
+    slider.setAttribute('tabindex', '0');
+    slider.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight') { clearTimeout(timer); goTo(nextIndex(), 'next'); }
+      if (e.key === 'ArrowLeft')  { clearTimeout(timer); goTo(prevIndex(), 'prev'); }
+    });
+  }
+
+  /* ── kick off ── */
+  updateCounter();
+  startProgress();
+  scheduleNext();
+})();

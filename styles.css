@@ -2932,3 +2932,351 @@ img {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==================================================================
+   VOICES OF FINANCIAL LITERACY — DYNAMIC SLIDE SHOW
+   ================================================================== */
+
+/* --- Section wrapper --- */
+.voices-section {
+  background: linear-gradient(160deg, #e8f0fe 0%, #f0f4ff 40%, #dbeafe 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* --- Background blobs --- */
+.voices-bg-shapes { position: absolute; inset: 0; pointer-events: none; }
+.voices-shape { position: absolute; border-radius: 50%; opacity: 0.15; }
+.voices-shape-1 {
+  width: 440px; height: 440px;
+  background: radial-gradient(circle, #1d4ed8, #1e3a8a);
+  top: -130px; left: -110px;
+}
+.voices-shape-2 {
+  width: 340px; height: 340px;
+  background: radial-gradient(circle, #3b82f6, #1d4ed8);
+  bottom: -90px; right: -90px;
+}
+.voices-shape-3 {
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, #60a5fa, #3b82f6);
+  top: 45%; left: 55%;
+}
+
+/* --- Section tag --- */
+.voices-tag { background: #dbeafe; color: #1e3a8a; }
+
+/* --- Title block --- */
+.voices-title-wrap {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+.voices-title-main {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 900;
+  color: #1e3a8a;
+  line-height: 1;
+  letter-spacing: 1px;
+  text-shadow: 2px 3px 0 rgba(30,58,138,0.15);
+  margin: 0 !important;
+}
+.voices-title-sub {
+  font-size: clamp(1.5rem, 4vw, 2.6rem);
+  font-weight: 800;
+  font-style: italic;
+  background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.15;
+  margin: 2px 0 0 !important;
+}
+.voices-mic {
+  position: absolute;
+  top: -4px; right: -54px;
+  font-size: 2.6rem;
+  filter: drop-shadow(2px 4px 6px rgba(30,58,138,0.25));
+  animation: micPulse 3s ease-in-out infinite;
+}
+@keyframes micPulse {
+  0%, 100% { transform: scale(1) rotate(-5deg); }
+  50%       { transform: scale(1.09) rotate(4deg); }
+}
+
+/* =============================================
+   SLIDER SHELL
+   ============================================= */
+.voices-slider {
+  position: relative;
+  max-width: 820px;
+  margin: 0 auto 44px;
+}
+
+/* --- Thin progress bar across the top --- */
+.vs-progress {
+  height: 4px;
+  background: #c7d7fa;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 0;
+}
+.vs-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #1e3a8a, #3b82f6);
+  border-radius: 2px;
+  /* JS drives the width; CSS handles the fill animation each tick */
+  transition: width 0.08s linear;
+}
+
+/* --- Track: clips slides, no horizontal scroll --- */
+.vs-track {
+  overflow: hidden;
+  border-radius: 0 0 20px 20px;
+}
+
+/* =============================================
+   SINGLE SLIDE
+   ============================================= */
+.vs-slide {
+  /* hidden by default */
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  background: #ffffff;
+  border: 2px solid #c7d7fa;
+  border-top: none;
+  border-radius: 0 0 20px 20px;
+  padding: 36px 48px 32px;
+  box-shadow: 0 8px 40px rgba(30,58,138,0.10);
+
+  /* entrance / exit handled with classes */
+  opacity: 0;
+  transform: translateX(60px);
+  transition: opacity 0.45s cubic-bezier(0.4,0,0.2,1),
+              transform 0.45s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* Active slide — visible, centred */
+.vs-slide.vs-active {
+  display: flex;
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Slide coming in from the left (going backward) */
+.vs-slide.vs-from-left {
+  transform: translateX(-60px);
+}
+
+/* --- Opening quote --- */
+.vs-open-quote {
+  font-size: 3.2rem;
+  line-height: 1;
+  color: #1e3a8a;
+  font-family: Georgia, serif;
+  align-self: flex-start;
+  margin-bottom: 6px;
+}
+
+/* --- Closing quote --- */
+.vs-close-quote {
+  font-size: 3.2rem;
+  line-height: 1;
+  color: #3b82f6;
+  font-family: Georgia, serif;
+  align-self: flex-end;
+  margin-top: 6px;
+}
+
+/* --- Body text --- */
+.vs-body {
+  width: 100%;
+  text-align: center;
+}
+.vs-body p {
+  font-size: clamp(0.92rem, 1vw + 0.3rem, 1.07rem);
+  color: #1f2937;
+  line-height: 1.8;
+  margin: 0;
+}
+.vs-body p.vs-large {
+  font-size: clamp(1.05rem, 1.2vw + 0.35rem, 1.28rem);
+  font-weight: 600;
+  color: #111827;
+}
+.vs-second { margin-top: 16px !important; }
+
+.vs-together {
+  font-size: clamp(1.15rem, 1.4vw + 0.4rem, 1.55rem) !important;
+  font-style: italic;
+  color: #1d4ed8 !important;
+  font-weight: 700 !important;
+  font-family: Georgia, serif;
+}
+
+/* --- Highlighted words --- */
+.vh { color: #1d4ed8; font-weight: 700; }
+
+/* --- Author nameplate --- */
+.vs-author {
+  width: 100%;
+  text-align: center;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 2px solid #dbeafe;
+}
+.vs-author strong {
+  display: inline-block;
+  font-size: clamp(0.9rem, 1vw + 0.3rem, 1.05rem);
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  background: #1e3a8a;
+  color: #ffffff;
+  padding: 7px 22px;
+  border-radius: 7px;
+  margin-bottom: 7px;
+}
+.vs-author span {
+  display: block;
+  font-size: clamp(0.8rem, 0.9vw + 0.3rem, 0.92rem);
+  color: #4b5563;
+  font-weight: 500;
+}
+
+/* Script-style author (Ocen Moses) */
+.vs-script-author em {
+  display: inline-block;
+  font-size: clamp(1.15rem, 1.4vw + 0.35rem, 1.5rem);
+  font-style: italic;
+  color: #1d4ed8;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+/* =============================================
+   PREV / NEXT ARROWS
+   ============================================= */
+.vs-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 2px solid #c7d7fa;
+  background: #ffffff;
+  color: #1e3a8a;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+  box-shadow: 0 2px 12px rgba(30,58,138,0.12);
+}
+.vs-arrow:hover {
+  background: #1e3a8a;
+  border-color: #1e3a8a;
+  color: #ffffff;
+  transform: translateY(-50%) scale(1.08);
+}
+.vs-prev { left: -56px; }
+.vs-next { right: -56px; }
+
+/* =============================================
+   DOT INDICATORS
+   ============================================= */
+.vs-dots {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 22px;
+}
+.vs-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  border: none;
+  background: #c7d7fa;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.25s, transform 0.25s;
+}
+.vs-dot.active {
+  background: #1e3a8a;
+  transform: scale(1.35);
+}
+.vs-dot:hover { background: #3b82f6; }
+
+/* =============================================
+   SLIDE COUNTER  (1 / 5)
+   ============================================= */
+.vs-counter {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #6b7280;
+  letter-spacing: 0.5px;
+}
+.vs-counter-sep { margin: 0 4px; color: #c7d7fa; }
+
+/* =============================================
+   CTA BAR
+   ============================================= */
+.voices-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  border: 2px solid #c7d7fa;
+  border-radius: 14px;
+  padding: 18px 28px;
+  gap: 16px;
+  flex-wrap: wrap;
+  box-shadow: 0 2px 12px rgba(30,58,138,0.08);
+}
+.voices-cta-contacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: center;
+}
+.voices-cta-contacts span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: clamp(0.8rem, 0.9vw + 0.3rem, 0.92rem);
+  font-weight: 600;
+  color: #1e3a8a;
+}
+.voices-cta-contacts svg { color: #1d4ed8; flex-shrink: 0; }
+.voices-btn {
+  white-space: nowrap;
+  background: #1e3a8a;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.voices-btn:hover { background: #1d4ed8; }
+
+/* =============================================
+   RESPONSIVE
+   ============================================= */
+@media (max-width: 960px) {
+  .vs-prev { left: -12px; }
+  .vs-next { right: -12px; }
+}
+@media (max-width: 768px) {
+  .vs-slide { padding: 28px 24px 24px; }
+  .vs-prev { left: 4px; }
+  .vs-next { right: 4px; }
+  .voices-title-main { font-size: 1.8rem; }
+  .voices-title-sub  { font-size: 1.4rem; }
+  .voices-mic { font-size: 2rem; right: -38px; }
+  .voices-cta { flex-direction: column; text-align: center; }
+  .voices-cta-contacts { justify-content: center; }
+}
+@media (max-width: 480px) {
+  .vs-arrow { width: 36px; height: 36px; }
+  .vs-slide { padding: 22px 16px 20px; }
+  .voices-mic { display: none; }
+}

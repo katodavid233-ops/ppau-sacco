@@ -3280,3 +3280,164 @@ img {
   .vs-slide { padding: 22px 16px 20px; }
   .voices-mic { display: none; }
 }
+
+/* ==================================================================
+   CHAIRPERSON WELCOME SECTION
+   ================================================================== */
+
+.chair-welcome-section {
+  background: var(--white);
+}
+
+.chair-welcome-card {
+  max-width: 860px;
+  margin: 0 auto;
+  background: linear-gradient(160deg, #f0f4ff 0%, #ffffff 60%);
+  border: 2px solid #c7d7fa;
+  border-radius: 24px;
+  padding: 52px 60px 44px;
+  box-shadow: 0 8px 48px rgba(30,58,138,0.08);
+  position: relative;
+}
+
+/* Large decorative quote marks */
+.chair-quote-mark {
+  font-size: 5rem;
+  line-height: 1;
+  color: #1e3a8a;
+  font-family: Georgia, serif;
+  opacity: 0.18;
+  margin-bottom: -16px;
+  display: block;
+}
+
+.chair-quote-close {
+  text-align: right;
+  margin-top: -8px;
+  margin-bottom: 0;
+  color: #3b82f6;
+}
+
+/* Body text */
+.chair-welcome-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chair-welcome-body p {
+  font-size: clamp(0.92rem, 1vw + 0.3rem, 1.06rem);
+  color: var(--gray-700);
+  line-height: 1.85;
+  margin: 0;
+}
+
+.chair-salutation {
+  font-size: clamp(1rem, 1.1vw + 0.35rem, 1.15rem) !important;
+  font-weight: 700;
+  color: var(--gray-900) !important;
+}
+
+.chair-closing-line {
+  font-size: clamp(0.95rem, 1.05vw + 0.32rem, 1.1rem) !important;
+  color: var(--gray-800) !important;
+  font-weight: 500;
+}
+
+/* Highlighted words */
+.chair-hl {
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+/* Divider */
+.chair-welcome-card::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #1e3a8a, #3b82f6);
+  border-radius: 2px;
+  margin: 28px auto 32px;
+}
+
+/* Signature block */
+.chair-signature {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.chair-sig-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #c7d7fa;
+  flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(30,58,138,0.14);
+}
+
+.chair-sig-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.chair-sig-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chair-sig-valediction {
+  font-size: clamp(0.82rem, 0.9vw + 0.28rem, 0.92rem);
+  color: var(--gray-500);
+  font-style: italic;
+  margin: 0;
+}
+
+.chair-sig-name {
+  font-size: clamp(1.1rem, 1.3vw + 0.38rem, 1.35rem);
+  font-weight: 800;
+  color: #1e3a8a;
+  font-style: italic;
+  font-family: Georgia, 'Times New Roman', serif;
+  margin: 0;
+}
+
+.chair-sig-title {
+  font-size: clamp(0.85rem, 0.95vw + 0.3rem, 1rem);
+  font-weight: 700;
+  color: var(--gray-800);
+  margin: 0;
+}
+
+.chair-sig-org {
+  font-size: clamp(0.78rem, 0.88vw + 0.28rem, 0.9rem);
+  color: var(--gray-500);
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .chair-welcome-card {
+    padding: 36px 28px 32px;
+  }
+
+  .chair-quote-mark {
+    font-size: 3.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .chair-welcome-card {
+    padding: 28px 18px 24px;
+  }
+
+  .chair-signature {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

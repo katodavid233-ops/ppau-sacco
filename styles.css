@@ -340,7 +340,7 @@ img {
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(12, 30, 74, 0.55);
+  background: linear-gradient(135deg, rgba(12,30,74,0.75) 0%, rgba(30,58,138,0.6) 50%, rgba(29,78,216,0.55) 100%);
 }
 
 .hero-arrow {
@@ -408,8 +408,12 @@ img {
   position: relative;
   z-index: 2;
   text-align: center;
-  padding: 0 24px;
+  padding: 40px 48px;
   max-width: 900px;
+  background: rgba(12, 30, 74, 0.5);
+  backdrop-filter: blur(8px);
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.1);
 }
 
 .hero-badge {
@@ -436,6 +440,7 @@ img {
   line-height: 1.15;
   margin-bottom: 24px;
   letter-spacing: -0.5px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 
 .hero h1 .highlight {
@@ -447,10 +452,12 @@ img {
 
 .hero-subtitle {
   font-size: clamp(1rem, 1.2vw + 0.4rem, 1.35rem);
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--white);
   max-width: 700px;
   margin: 0 auto 36px;
   line-height: 1.7;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.3);
+  font-weight: 400;
 }
 
 .hero-buttons {

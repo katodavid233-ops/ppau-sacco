@@ -8,7 +8,7 @@ export default {
     const corsOrigin = allowedOrigins.includes(origin) ? origin : '*';
     const corsHeaders = {
       'Access-Control-Allow-Origin': corsOrigin,
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       'Access-Control-Max-Age': '86400',
     };
@@ -112,6 +112,33 @@ export default {
           return await handleGetMember(request, env, corsHeaders);
         }
         return jsonResponse({ error: 'Method not allowed', expected: 'GET' }, 405, corsHeaders);
+      }
+      if (normalizedPath === '/api/notifications') {
+        if (request.method === 'GET') {
+          return await handlePublicNotifications(request, env, corsHeaders);
+        }
+        return jsonResponse({ error: 'Method not allowed', expected: 'GET' }, 405, corsHeaders);
+      }
+      if (normalizedPath === '/api/admin/notifications') {
+        if (request.method === 'GET') {
+          return await handleAdminNotifications(request, env, corsHeaders);
+        }
+        if (request.method === 'POST') {
+          return await handleCreateNotification(request, env, corsHeaders);
+        }
+        return jsonResponse({ error: 'Method not allowed', expected: 'GET or POST' }, 405, corsHeaders);
+      }
+      if (normalizedPath.startsWith('/api/admin/notifications/') && normalizedPath.endsWith('/delete')) {
+        if (request.method === 'POST') {
+          return await handleDeleteNotification(request, env, corsHeaders);
+        }
+        return jsonResponse({ error: 'Method not allowed', expected: 'POST' }, 405, corsHeaders);
+      }
+      if (normalizedPath.startsWith('/api/admin/notifications/') && normalizedPath.endsWith('/toggle')) {
+        if (request.method === 'POST') {
+          return await handleToggleNotification(request, env, corsHeaders);
+        }
+        return jsonResponse({ error: 'Method not allowed', expected: 'POST' }, 405, corsHeaders);
       }
       if (path === '/' || path === '') {
         return jsonResponse({
@@ -847,4 +874,120 @@ async function handleGetMember(request, env, corsHeaders) {
     member,
     payments,
   }, 200, corsHeaders);
+}
+
+// ===== NOTIFICATIONS =====
+
+async function handlePublicNotifications(request, env, corsHeaders) {
+  const listResult = await env.MEMBERS_KV.list({ prefix: 'notification:' });
+  const notifications = [];
+
+  for (const key of listResult.keys) {
+    const data = await env.MEMBERS_KV.get(key.name);
+    if (!data) continue;
+    const notif = JSON.parse(data);
+    if (notif.active) {
+      notifications.push({
+        id: notif.id,
+        title: notif.title,
+        message: notif.message,
+        category: notif.category,
+        link: notif.link || '',
+        createdAt: notif.createdAt,
+      });
+    }
+  }
+
+  notifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  return jsonResponse({ success: true, notifications }, 200, corsHeaders);
+}
+
+async function handleAdminNotifications(request, env, corsHeaders) {
+  const adminAuth = await ensureAdmin(request, env, corsHeaders);
+  if (adminAuth.error) return adminAuth.error;
+
+  const listResult = await env.MEMBERS_KV.list({ prefix: 'notification:' });
+  const notifications = [];
+
+  for (const key of listResult.keys) {
+    const data = await env.MEMBERS_KV.get(key.name);
+    if (!data) continue;
+    notifications.push(JSON.parse(data));
+  }
+
+  notifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  return jsonResponse({ success: true, notifications }, 200, corsHeaders);
+}
+
+async function handleCreateNotification(request, env, corsHeaders) {
+  const adminAuth = await ensureAdmin(request, env, corsHeaders);
+  if (adminAuth.error) return adminAuth.error;
+
+  const body = await request.json();
+  const { title, message, category, link } = body;
+
+  if (!title || !message || !category) {
+    return jsonResponse({ error: 'Title, message, and category are required' }, 400, corsHeaders);
+  }
+
+  const validCategories = ['news', 'announcement', 'blog'];
+  if (!validCategories.includes(category)) {
+    return jsonResponse({ error: 'Category must be news, announcement, or blog' }, 400, corsHeaders);
+  }
+
+  const id = `NOTIF-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+  const notification = {
+    id,
+    title,
+    message,
+    category,
+    link: link || '',
+    active: true,
+    createdBy: adminAuth.adminEmail,
+    createdAt: new Date().toISOString(),
+  };
+
+  await env.MEMBERS_KV.put(`notification:${id}`, JSON.stringify(notification));
+
+  return jsonResponse({ success: true, notification }, 201, corsHeaders);
+}
+
+async function handleDeleteNotification(request, env, corsHeaders) {
+  const adminAuth = await ensureAdmin(request, env, corsHeaders);
+  if (adminAuth.error) return adminAuth.error;
+
+  const url = new URL(request.url);
+  const segments = url.pathname.split('/').filter(Boolean);
+  const notifId = segments[segments.length - 2];
+
+  const notifData = await env.MEMBERS_KV.get(`notification:${notifId}`);
+  if (!notifData) {
+    return jsonResponse({ error: 'Notification not found' }, 404, corsHeaders);
+  }
+
+  await env.MEMBERS_KV.delete(`notification:${notifId}`);
+
+  return jsonResponse({ success: true, message: 'Notification deleted' }, 200, corsHeaders);
+}
+
+async function handleToggleNotification(request, env, corsHeaders) {
+  const adminAuth = await ensureAdmin(request, env, corsHeaders);
+  if (adminAuth.error) return adminAuth.error;
+
+  const url = new URL(request.url);
+  const segments = url.pathname.split('/').filter(Boolean);
+  const notifId = segments[segments.length - 2];
+
+  const notifData = await env.MEMBERS_KV.get(`notification:${notifId}`);
+  if (!notifData) {
+    return jsonResponse({ error: 'Notification not found' }, 404, corsHeaders);
+  }
+
+  const notif = JSON.parse(notifData);
+  notif.active = !notif.active;
+  await env.MEMBERS_KV.put(`notification:${notifId}`, JSON.stringify(notif));
+
+  return jsonResponse({ success: true, notification: notif }, 200, corsHeaders);
 }

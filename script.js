@@ -1687,6 +1687,7 @@ async function loadAdminData() {
     renderRegistrationsTable(allRegistrations);
     renderPaymentsTable(allPayments);
     renderAllMembersTable(allMembers);
+    loadAdminNotifications();
   } catch (err) {
     showAdminToast(err.message || 'Could not load admin data.', 'error');
   }
@@ -1701,6 +1702,7 @@ function switchAdminTab(tab) {
   if (tab === 'registrations') document.getElementById('adminTabRegistrations')?.classList.add('active');
   if (tab === 'payments') document.getElementById('adminTabPayments')?.classList.add('active');
   if (tab === 'allmembers') document.getElementById('adminTabAllMembers')?.classList.add('active');
+  if (tab === 'notifications') document.getElementById('adminTabNotifications')?.classList.add('active');
 }
 
 function handleAdminSearch() {
@@ -2007,4 +2009,237 @@ function showAdminToast(message, type = 'info') {
   setTimeout(() => {
     toast.className = 'admin-toast';
   }, 3500);
+}
+
+// ==================================================================
+// NOTIFICATION SYSTEM (homepage)
+// ==================================================================
+
+let allNotifications = [];
+let currentNotifFilter = 'all';
+
+async function loadHomepageNotifications() {
+  const bell = document.getElementById('notifBell');
+  if (!bell) return;
+
+  try {
+    const data = await apiCall('/api/notifications');
+    allNotifications = data.notifications || [];
+
+    if (allNotifications.length > 0) {
+      bell.style.display = 'flex';
+      const badge = document.getElementById('notifBellBadge');
+      if (badge) {
+        badge.textContent = allNotifications.length;
+        badge.style.display = 'flex';
+      }
+
+      renderNotifPanel(allNotifications);
+      renderNotifPopup(allNotifications.slice(0, 3));
+
+      const hasSeenPopup = localStorage.getItem('ppau_notif_popup_seen');
+      if (!hasSeenPopup) {
+        setTimeout(() => {
+          document.getElementById('notifPopupOverlay').style.display = 'flex';
+        }, 3000);
+      }
+    }
+  } catch (err) {
+    // Silently fail — notifications are non-critical
+  }
+}
+
+function renderNotifPanel(notifications) {
+  const body = document.getElementById('notifPanelBody');
+  if (!body) return;
+
+  if (!notifications.length) {
+    body.innerHTML = `
+      <div class="notif-empty">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <p>No notifications in this category</p>
+      </div>`;
+    return;
+  }
+
+  body.innerHTML = notifications.map(n => {
+    const categoryLabel = n.category === 'announcement' ? 'Announcement' : n.category.charAt(0).toUpperCase() + n.category.slice(1);
+    const date = n.createdAt ? new Date(n.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+    const linkHtml = n.link ? `<a href="${n.link}" target="_blank" class="notif-item-link">Read more →</a>` : '';
+
+    return `
+      <div class="notif-item">
+        <div class="notif-item-header">
+          <span class="notif-category-badge ${n.category}">${categoryLabel}</span>
+        </div>
+        <div class="notif-item-title">${n.title}</div>
+        <div class="notif-item-message">${n.message}</div>
+        <div class="notif-item-meta">
+          <span>${date}</span>
+          ${linkHtml}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderNotifPopup(notifications) {
+  const body = document.getElementById('notifPopupBody');
+  if (!body) return;
+
+  if (!notifications.length) {
+    body.innerHTML = '<p style="text-align:center;color:var(--gray-500);padding:20px">No new updates at this time.</p>';
+    return;
+  }
+
+  body.innerHTML = notifications.map(n => {
+    const categoryLabel = n.category === 'announcement' ? 'Announcement' : n.category.charAt(0).toUpperCase() + n.category.slice(1);
+    return `
+      <div class="notif-popup-item">
+        <div class="notif-item-header">
+          <span class="notif-category-badge ${n.category}">${categoryLabel}</span>
+        </div>
+        <div class="notif-item-title">${n.title}</div>
+        <div class="notif-item-message">${n.message}</div>
+      </div>`;
+  }).join('');
+}
+
+function filterNotifications(category, btn) {
+  currentNotifFilter = category;
+  document.querySelectorAll('.notif-tab').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  const filtered = category === 'all' ? allNotifications : allNotifications.filter(n => n.category === category);
+  renderNotifPanel(filtered);
+}
+
+function openNotificationPanel() {
+  document.getElementById('notifPanelOverlay').style.display = 'flex';
+}
+
+function closeNotificationPanel(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('notifPanelOverlay').style.display = 'none';
+}
+
+function closeNotifPopup(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('notifPopupOverlay').style.display = 'none';
+  localStorage.setItem('ppau_notif_popup_seen', 'true');
+}
+
+// Initialize notifications on homepage
+if (document.getElementById('notifBell')) {
+  loadHomepageNotifications();
+}
+
+// ==================================================================
+// ADMIN NOTIFICATION MANAGEMENT
+// ==================================================================
+
+let adminNotifications = [];
+
+async function loadAdminNotifications() {
+  const token = localStorage.getItem('ppau_admin_token');
+  if (!token) return;
+
+  try {
+    const data = await apiCall(`/api/admin/notifications?token=${token}`);
+    adminNotifications = data.notifications || [];
+    document.getElementById('tabNotifCount').textContent = adminNotifications.length;
+    renderAdminNotificationsTable(adminNotifications);
+  } catch (err) {
+    showAdminToast(err.message || 'Could not load notifications.', 'error');
+  }
+}
+
+function renderAdminNotificationsTable(notifications) {
+  const tbody = document.getElementById('adminNotifTableBody');
+  if (!tbody) return;
+
+  if (!notifications.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="admin-empty-cell">No notifications created yet.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = notifications.map(n => {
+    const categoryLabel = n.category === 'announcement' ? 'Announcement' : n.category.charAt(0).toUpperCase() + n.category.slice(1);
+    const date = n.createdAt ? new Date(n.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+    const statusClass = n.active ? 'status-active' : 'status-rejected';
+    const statusText = n.active ? 'Active' : 'Hidden';
+    const toggleText = n.active ? 'Hide' : 'Show';
+
+    return `<tr>
+      <td><strong>${n.title}</strong></td>
+      <td><span class="notif-category-badge ${n.category}">${categoryLabel}</span></td>
+      <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n.message}</td>
+      <td><span class="admin-status-pill ${statusClass}">${statusText}</span></td>
+      <td>${date}</td>
+      <td class="admin-actions-cell">
+        <button class="btn btn-outline-dark btn-xs" onclick="adminToggleNotification('${n.id}')">${toggleText}</button>
+        <button class="btn btn-danger btn-xs" onclick="adminDeleteNotification('${n.id}')">Delete</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function handleCreateNotification(e) {
+  e.preventDefault();
+  const token = localStorage.getItem('ppau_admin_token');
+  if (!token) return;
+
+  const title = document.getElementById('notifTitle').value.trim();
+  const message = document.getElementById('notifMessage').value.trim();
+  const category = document.getElementById('notifCategory').value;
+  const link = document.getElementById('notifLink').value.trim();
+
+  if (!title || !message || !category) {
+    showAdminToast('Please fill in all required fields.', 'error');
+    return;
+  }
+
+  const btn = e.target.querySelector('button[type="submit"]');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><circle cx="12" cy="12" r="10"/></svg> Publishing...';
+  btn.disabled = true;
+
+  try {
+    await apiCall(`/api/admin/notifications?token=${token}`, 'POST', { title, message, category, link });
+    showAdminToast('Notification published successfully.', 'success');
+    document.getElementById('notifCreateForm').reset();
+    loadAdminNotifications();
+  } catch (err) {
+    showAdminToast(err.message || 'Could not publish notification.', 'error');
+  } finally {
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+  }
+}
+
+async function adminDeleteNotification(notifId) {
+  const token = localStorage.getItem('ppau_admin_token');
+  if (!token) return;
+
+  if (!confirm('Are you sure you want to delete this notification?')) return;
+
+  try {
+    await apiCall(`/api/admin/notifications/${notifId}/delete?token=${token}`, 'POST');
+    showAdminToast('Notification deleted.', 'success');
+    loadAdminNotifications();
+  } catch (err) {
+    showAdminToast(err.message || 'Could not delete notification.', 'error');
+  }
+}
+
+async function adminToggleNotification(notifId) {
+  const token = localStorage.getItem('ppau_admin_token');
+  if (!token) return;
+
+  try {
+    await apiCall(`/api/admin/notifications/${notifId}/toggle?token=${token}`, 'POST');
+    showAdminToast('Notification status updated.', 'success');
+    loadAdminNotifications();
+  } catch (err) {
+    showAdminToast(err.message || 'Could not update notification.', 'error');
+  }
 }

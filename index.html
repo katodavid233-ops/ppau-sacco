@@ -996,6 +996,56 @@
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
   </button>
 
+  <!-- NOTIFICATION BELL -->
+  <button id="notifBell" class="notif-bell" onclick="openNotificationPanel()" aria-label="Notifications" style="display:none">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    <span class="notif-bell-badge" id="notifBellBadge" style="display:none">0</span>
+  </button>
+
+  <!-- NOTIFICATION PANEL -->
+  <div class="notif-panel-overlay" id="notifPanelOverlay" style="display:none" onclick="closeNotificationPanel(event)">
+    <div class="notif-panel" onclick="event.stopPropagation()">
+      <div class="notif-panel-header">
+        <div class="notif-panel-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <h3>Latest Updates</h3>
+        </div>
+        <button class="notif-panel-close" onclick="closeNotificationPanel()">&times;</button>
+      </div>
+      <div class="notif-panel-tabs">
+        <button class="notif-tab active" data-category="all" onclick="filterNotifications('all', this)">All</button>
+        <button class="notif-tab" data-category="news" onclick="filterNotifications('news', this)">News</button>
+        <button class="notif-tab" data-category="announcement" onclick="filterNotifications('announcement', this)">Announcements</button>
+        <button class="notif-tab" data-category="blog" onclick="filterNotifications('blog', this)">Blog</button>
+      </div>
+      <div class="notif-panel-body" id="notifPanelBody">
+        <div class="notif-empty">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <p>No notifications yet</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATION AUTO POPUP (first-time visitors) -->
+  <div class="notif-popup-overlay" id="notifPopupOverlay" style="display:none" onclick="closeNotifPopup(event)">
+    <div class="notif-popup" onclick="event.stopPropagation()">
+      <button class="notif-popup-close" onclick="closeNotifPopup()">&times;</button>
+      <div class="notif-popup-header">
+        <div class="notif-popup-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+        <h3>Stay Updated</h3>
+        <p>Get the latest news and announcements from PPAU SACCO</p>
+      </div>
+      <div class="notif-popup-body" id="notifPopupBody"></div>
+      <div class="notif-popup-footer">
+        <button class="btn btn-primary btn-full" onclick="closeNotifPopup()">Got It</button>
+        <button class="btn btn-outline-dark btn-full" onclick="openNotificationPanel(); closeNotifPopup();">View All Updates</button>
+      </div>
+    </div>
+  </div>
+
   <script src="script.js"></script>
 </body>
 </html>

@@ -15,20 +15,16 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy via FTP
-        uses: airvzxf/ftp-deployment-action@latest
+        uses: SamKirkland/FTP-Deploy-Action@4.3.4
         with:
           server: ${{ secrets.FTP_SERVER }}
-          user: ${{ secrets.FTP_USERNAME }}
+          username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local_dir: "./"
-          remote_dir: "/public_html"
-          delete: "false"
-          exclude: >
-            .git
-            .github
-            .gitignore
-            .vscode
-            node_modules
-            worker
-            tests
-            README.md
+          server-dir: /public_html/
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/worker/**
+            **/tests/**
+            **/.vscode/**

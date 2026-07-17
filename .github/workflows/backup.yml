@@ -16,18 +16,25 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Backup DNS Records
+        continue-on-error: true
         env:
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CF_ZONE_ID: ${{ secrets.CF_ZONE_ID }}
         run: |
           mkdir -p backup
-          curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/dns_records" \
+          HTTP_CODE=$(curl -s -o backup/dns-records.json -w "%{code}" \
+            -X GET "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/dns_records" \
             -H "Authorization: Bearer ${CF_API_TOKEN}" \
-            -H "Content-Type: application/json" \
-            | python3 -m json.tool > backup/dns-records.json
-          echo "DNS backup complete"
+            -H "Content-Type: application/json")
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "DNS backup complete"
+          else
+            echo "DNS backup skipped (HTTP $HTTP_CODE) - add Zone:DNS permission to token"
+            echo '{"error":"DNS permission missing"}' > backup/dns-records.json
+          fi
 
       - name: Backup KV Store
+        continue-on-error: true
         env:
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
@@ -36,18 +43,19 @@ jobs:
           mkdir -p backup/kv
           curl -s -X GET "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/keys?per_page=1000" \
             -H "Authorization: Bearer ${CF_API_TOKEN}" \
-            -H "Content-Type: application/json" > backup/kv/keys.json
+            -H "Content-Type: application/json" \
+            -o backup/kv/keys.json
 
-          KEYS=$(cat backup/kv/keys.json | python3 -c "import sys,json; data=json.load(sys.stdin); [print(k['name']) for k in data.get('result',[])]" 2>/dev/null || echo "")
-          for key in $KEYS; do
+          grep -o '"name":"[^"]*"' backup/kv/keys.json 2>/dev/null | sed 's/"name":"//;s/"//' | while read key; do
             SAFE_NAME=$(echo "$key" | tr '/:' '_-')
             curl -s -X GET "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/${key}" \
               -H "Authorization: Bearer ${CF_API_TOKEN}" \
-              -o "backup/kv/${SAFE_NAME}.json" 2>/dev/null || true
+              -o "backup/kv/${SAFE_NAME}.json" || true
           done
           echo "KV backup complete"
 
       - name: Backup Worker Scripts
+        continue-on-error: true
         env:
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
@@ -55,37 +63,17 @@ jobs:
           mkdir -p backup/workers
           curl -s -X GET "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/workers/scripts" \
             -H "Authorization: Bearer ${CF_API_TOKEN}" \
-            -H "Content-Type: application/json" | python3 -c "
-          import sys, json
-          data = json.load(sys.stdin)
-          for script in data.get('result', []):
-              print(script.get('id', 'unknown'))
-          " > /tmp/script_ids.txt 2>/dev/null || true
+            -H "Content-Type: application/json" \
+            -o /tmp/scripts.json
 
-          while IFS= read -r script_id; do
+          grep -o '"id":"[^"]*"' /tmp/scripts.json 2>/dev/null | sed 's/"id":"//;s/"//' | while read script_id; do
             if [ -n "$script_id" ]; then
               curl -s -X GET "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/workers/scripts/${script_id}" \
                 -H "Authorization: Bearer ${CF_API_TOKEN}" \
-                -o "backup/workers/${script_id}.js" 2>/dev/null || true
+                -o "backup/workers/${script_id}.js" || true
             fi
-          done < /tmp/script_ids.txt
+          done
           echo "Worker backup complete"
-
-      - name: Generate Backup Summary
-        run: |
-          echo "# Cloudflare Backup" > backup/README.md
-          echo "Generated: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> backup/README.md
-          echo "" >> backup/README.md
-          echo "## Contents" >> backup/README.md
-          echo "- \`dns-records.json\` - DNS zone records" >> backup/README.md
-          echo "- \`kv/\` - KV store key/value pairs" >> backup/README.md
-          echo "- \`workers/\` - Worker script source code" >> backup/README.md
-          echo "" >> backup/README.md
-          echo "## Zone ID" >> backup/README.md
-          echo "\`${{ secrets.CF_ZONE_ID }}\`" >> backup/README.md
-          echo "" >> backup/README.md
-          echo "## KV Namespace ID" >> backup/README.md
-          echo "\`${{ secrets.CF_KV_NAMESPACE_ID }}\`" >> backup/README.md
 
       - name: Commit Backup
         run: |

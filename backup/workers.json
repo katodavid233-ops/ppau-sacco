@@ -1,0 +1,65 @@
+{
+  "result": [
+    {
+      "created_on": "2026-07-14T12:33:25.428256Z",
+      "modified_on": "2026-07-17T20:57:48.008434Z",
+      "id": "ppau-sacco",
+      "tag": "efcfb1935f6a437aad7144726b895c7a",
+      "tags": [],
+      "deployment_id": "",
+      "tail_consumers": null,
+      "logpush": false,
+      "observability": {
+        "enabled": true,
+        "head_sampling_rate": 1,
+        "logs": {
+          "enabled": true,
+          "head_sampling_rate": 1,
+          "persist": true,
+          "invocation_logs": true
+        },
+        "traces": {
+          "enabled": false,
+          "persist": true,
+          "head_sampling_rate": 1
+        }
+      },
+      "has_assets": true,
+      "has_modules": false,
+      "etag": "",
+      "handlers": [
+        "fetch"
+      ],
+      "last_deployed_from": "",
+      "compatibility_date": "2026-07-17",
+      "compatibility_flags": [
+        "nodejs_compat"
+      ],
+      "usage_model": "standard",
+      "routes": null
+    },
+    {
+      "created_on": "2026-07-15T04:03:47.714442Z",
+      "modified_on": "2026-07-17T05:23:57.496458Z",
+      "id": "ppau-sacco-api",
+      "tag": "985b5056e56f41c8bba425d9f7f52cb1",
+      "tags": [],
+      "deployment_id": "",
+      "tail_consumers": null,
+      "logpush": false,
+      "has_assets": false,
+      "has_modules": true,
+      "etag": "a237c7c7b158b1a48143eae375a424a356a0ce9049d946679281eed5f0c5bc04",
+      "handlers": [
+        "fetch"
+      ],
+      "last_deployed_from": "wrangler",
+      "compatibility_date": "2024-12-01",
+      "usage_model": "standard",
+      "routes": null
+    }
+  ],
+  "success": true,
+  "errors": [],
+  "messages": []
+}

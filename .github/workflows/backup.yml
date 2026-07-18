@@ -19,6 +19,13 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Sync with remote
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git reset --hard origin/main
+
       - name: Backup DNS Records
         continue-on-error: true
         env:
@@ -80,15 +87,11 @@ jobs:
           echo "Worker backup complete"
 
       - name: Commit and Push
-        continue-on-error: true
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add backup/
           if git diff --cached --quiet; then
             echo "No backup changes to commit"
           else
             git commit -m "Cloudflare backup $(date -u '+%Y-%m-%d')"
-            git pull --rebase origin main || true
-            git push origin main || true
+            git push origin main
           fi

@@ -21,8 +21,8 @@ jobs:
 
       - name: Sync with remote
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "Kato David Kibalama"
+          git config user.email "katodavidkibalama@gmail.com"
           git fetch origin main
           git reset --hard origin/main
 

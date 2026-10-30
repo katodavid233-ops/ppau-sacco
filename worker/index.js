@@ -140,6 +140,54 @@ export default {
         }
         return jsonResponse({ error: 'Method not allowed', expected: 'POST' }, 405, corsHeaders);
       }
+      if (normalizedPath === '/api/elections') {
+        if (request.method === 'GET') {
+          return await handleListElections(request, env, corsHeaders);
+        }
+        if (request.method === 'POST') {
+          return await handleCreateElection(request, env, corsHeaders);
+        }
+        return jsonResponse({ error: 'Method not allowed', expected: 'GET or POST' }, 405, corsHeaders);
+      }
+      if (normalizedPath === '/api/admin/elections') {
+        if (request.method === 'GET') {
+          return await handleAdminElections(request, env, corsHeaders);
+        }
+        return jsonResponse({ error: 'Method not allowed', expected: 'GET' }, 405, corsHeaders);
+      }
+      if (normalizedPath.startsWith('/api/elections/') && normalizedPath.endsWith('/vote')) {
+        if (request.method === 'POST') {
+          return await handleVote(request, env, corsHeaders);
+        }
+        return jsonResponse({ error: 'Method not allowed', expected: 'POST' }, 405, corsHeaders);
+      }
+      if (normalizedPath.startsWith('/api/elections/')) {
+        if (request.method === 'GET') {
+          return await handleGetElection(request, env, corsHeaders);
+        }
+        return jsonResponse({ error: 'Method not allowed', expected: 'GET' }, 405, corsHeaders);
+      }
+      if (normalizedPath.startsWith('/api/admin/elections/')) {
+        const adminElectionParts = normalizedPath.slice('/api/admin/elections/'.length).split('/').filter(Boolean);
+        const adminElectionAction = adminElectionParts[1] || '';
+        const adminElectionSubAction = adminElectionParts[3] || '';
+        if (request.method === 'GET' && !adminElectionAction) {
+          return await handleAdminElectionDetail(request, env, corsHeaders, adminElectionParts[0] || '');
+        }
+        if (request.method === 'POST' && adminElectionAction === 'close') {
+          return await handleCloseElection(request, env, corsHeaders, adminElectionParts[0] || '');
+        }
+        if (request.method === 'POST' && adminElectionAction === 'delete') {
+          return await handleDeleteElection(request, env, corsHeaders, adminElectionParts[0] || '');
+        }
+        if (request.method === 'POST' && adminElectionAction === 'candidates' && !adminElectionSubAction) {
+          return await handleAddCandidate(request, env, corsHeaders, adminElectionParts[0] || '');
+        }
+        if (request.method === 'POST' && adminElectionAction === 'candidates' && adminElectionSubAction === 'delete') {
+          return await handleDeleteCandidate(request, env, corsHeaders, adminElectionParts[0] || '', adminElectionParts[2] || '');
+        }
+        return jsonResponse({ error: 'Not found', path: normalizedPath }, 404, corsHeaders);
+      }
       if (path === '/' || path === '') {
         return jsonResponse({
           status: 'ok',
@@ -150,7 +198,7 @@ export default {
       }
 
       if (normalizedPath === '/api/health') {
-        return jsonResponse({ status: 'ok', timestamp: new Date().toISOString(), routes: ['register', 'login', 'payment', 'member'] }, 200, corsHeaders);
+        return jsonResponse({ status: 'ok', timestamp: new Date().toISOString(), routes: ['register', 'login', 'payment', 'member', 'elections', 'admin'] }, 200, corsHeaders);
       }
 
       return jsonResponse({ error: 'Not found', path }, 404, corsHeaders);
@@ -990,4 +1038,336 @@ async function handleToggleNotification(request, env, corsHeaders) {
   await env.MEMBERS_KV.put(`notification:${notifId}`, JSON.stringify(notif));
 
   return jsonResponse({ success: true, notification: notif }, 200, corsHeaders);
+}
+
+// ===== LEADERSHIP ELECTIONS =====
+
+const LEADERSHIP_POSITIONS = [
+  { id: 'board-chairperson', positionId: 'board-chairperson', title: 'Board Chairperson', role: 'Board of Directors', description: 'Represents the SACCO on governance, policy, and strategic matters.' },
+  { id: 'vice-chairperson', positionId: 'vice-chairperson', title: 'Vice Chairperson', role: 'Board of Directors', description: 'Assists the Chairperson and chairs meetings in their absence.' },
+  { id: 'secretary', positionId: 'secretary', title: 'Secretary', role: 'Board of Directors', description: 'Maintains cooperative minutes and official records.' },
+  { id: 'treasurer', positionId: 'treasurer', title: 'Treasurer', role: 'Board of Directors', description: 'Oversees savings, contributions, and financial reporting.' },
+  { id: 'ceo', positionId: 'ceo', title: 'CEO / Manager', role: 'Management', description: 'Runs day-to-day SACCO operations and staff supervision.' },
+  { id: 'pr-manager', positionId: 'pr-manager', title: 'Public Relations Manager', role: 'Management', description: 'Handles communications, media, and community relations.' },
+  { id: 'financial-advisor', positionId: 'financial-advisor', title: 'SACCO Financial Advisor', role: 'Advisory', description: 'Provides financial guidance and advisory support to members.' },
+];
+
+async function listAllElections(env) {
+  const listResult = await env.MEMBERS_KV.list({ prefix: 'election:' });
+  const elections = [];
+  for (const item of listResult.keys) {
+    const data = await env.MEMBERS_KV.get(item.name);
+    if (!data) continue;
+    try {
+      elections.push(JSON.parse(data));
+    } catch (err) {
+      // Skip unreadable election records
+    }
+  }
+  return elections;
+}
+
+function computeElectionTally(election) {
+  const candidates = (election.candidates || [])
+    .map(c => ({
+      candidateId: c.candidateId,
+      name: c.name,
+      image: c.image || '',
+      bio: c.bio || '',
+      votes: Number(c.votes || 0),
+    }))
+    .sort((a, b) => b.votes - a.votes);
+
+  const totalVotes = candidates.reduce((sum, c) => sum + c.votes, 0);
+  const results = candidates.map(c => ({
+    ...c,
+    percentage: totalVotes > 0 ? Math.round((c.votes / totalVotes) * 1000) / 10 : 0,
+  }));
+
+  return { candidates: results, totalVotes, winner: results.length ? results[0] : null };
+}
+
+function publicElectionView(election, voterStatus) {
+  const tally = computeElectionTally(election);
+  return {
+    id: election.id,
+    positionId: election.positionId || '',
+    position: election.position || '',
+    title: election.title || election.position || 'Leadership Election',
+    description: election.description || '',
+    status: election.status || 'draft',
+    startDate: election.startDate || null,
+    endDate: election.endDate || null,
+    createdAt: election.createdAt || null,
+    createdBy: election.createdBy || null,
+    candidates: tally.candidates,
+    totalVotes: tally.totalVotes,
+    winner: tally.winner,
+    voterStatus: voterStatus || null,
+  };
+}
+
+async function handleListElections(request, env, corsHeaders) {
+  const elections = await listAllElections(env);
+  elections.sort((a, b) => {
+    const openA = a.status === 'open' ? 1 : 0;
+    const openB = b.status === 'open' ? 1 : 0;
+    if (openA !== openB) return openB - openA;
+    return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+  });
+  const views = elections.map(e => publicElectionView(e));
+  return jsonResponse({ success: true, elections: views }, 200, corsHeaders);
+}
+
+async function handleAdminElections(request, env, corsHeaders) {
+  const adminAuth = await ensureAdmin(request, env, corsHeaders);
+  if (adminAuth.error) return adminAuth.error;
+
+  const elections = await listAllElections(env);
+  elections.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  return jsonResponse({ success: true, elections: elections.map(e => publicElectionView(e)) }, 200, corsHeaders);
+}
+
+async function handleGetElection(request, env, corsHeaders) {
+  const url = new URL(request.url);
+  const segments = url.pathname.split('/').filter(Boolean);
+  const electionId = segments[2] || '';
+  const electionData = await env.MEMBERS_KV.get(`election:${electionId}`);
+  if (!electionData) {
+    return jsonResponse({ error: 'Election not found' }, 404, corsHeaders);
+  }
+  const election = JSON.parse(electionData);
+  const voterStatus = await resolveElectionVoterStatus(env, election, url.searchParams.get('token'));
+  const tally = computeElectionTally(election);
+  return jsonResponse({
+    success: true,
+    election: { ...publicElectionView(election, voterStatus), tally },
+    tally,
+    voterStatus,
+  }, 200, corsHeaders);
+}
+
+async function handleAdminElectionDetail(request, env, corsHeaders, electionId) {
+  const adminAuth = await ensureAdmin(request, env, corsHeaders);
+  if (adminAuth.error) return adminAuth.error;
+
+  const electionData = await env.MEMBERS_KV.get(`election:${electionId}`);
+  if (!electionData) {
+    return jsonResponse({ error: 'Election not found' }, 404, corsHeaders);
+  }
+  const election = JSON.parse(electionData);
+  return jsonResponse({ success: true, election: publicElectionView(election) }, 200, corsHeaders);
+}
+
+async function handleCreateElection(request, env, corsHeaders) {
+  const adminAuth = await ensureAdmin(request, env, corsHeaders);
+  if (adminAuth.error) return adminAuth.error;
+
+  const body = await request.json();
+  const positionId = body.positionId || '';
+  const position = LEADERSHIP_POSITIONS.find(p => p.id === positionId) || null;
+
+  const electionId = `ELT-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+  const election = {
+    id: electionId,
+    positionId,
+    position: position ? position.title : body.position || body.title || 'Leadership',
+    title: body.title || (position ? `${position.title} Election` : 'Leadership Election'),
+    description: body.description || '',
+    status: body.status || 'draft',
+    startDate: body.startDate || null,
+    endDate: body.endDate || null,
+    createdAt: new Date().toISOString(),
+    createdBy: adminAuth.adminEmail,
+    candidates: [],
+    votes: [],
+  };
+
+  if (body.candidateName) {
+    election.candidates.push({
+      candidateId: `CAND-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+      name: body.candidateName,
+      image: body.candidateImage || '',
+      bio: body.candidateBio || '',
+      votes: 0,
+    });
+  }
+
+  await env.MEMBERS_KV.put(`election:${electionId}`, JSON.stringify(election));
+
+  return jsonResponse({ success: true, election: publicElectionView(election) }, 201, corsHeaders);
+}
+
+async function handleAddCandidate(request, env, corsHeaders, electionId) {
+  const adminAuth = await ensureAdmin(request, env, corsHeaders);
+  if (adminAuth.error) return adminAuth.error;
+
+  const body = await request.json();
+  const electionData = await env.MEMBERS_KV.get(`election:${electionId}`);
+  if (!electionData) {
+    return jsonResponse({ error: 'Election not found' }, 404, corsHeaders);
+  }
+  const election = JSON.parse(electionData);
+  election.candidates = election.candidates || [];
+  election.candidates.push({
+    candidateId: `CAND-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+    name: body.name,
+    image: body.image || '',
+    bio: body.bio || '',
+    votes: 0,
+  });
+  await env.MEMBERS_KV.put(`election:${electionId}`, JSON.stringify(election));
+
+  return jsonResponse({ success: true, election: publicElectionView(election) }, 200, corsHeaders);
+}
+
+async function handleDeleteCandidate(request, env, corsHeaders, electionId, candidateId) {
+  const adminAuth = await ensureAdmin(request, env, corsHeaders);
+  if (adminAuth.error) return adminAuth.error;
+
+  const electionData = await env.MEMBERS_KV.get(`election:${electionId}`);
+  if (!electionData) {
+    return jsonResponse({ error: 'Election not found' }, 404, corsHeaders);
+  }
+  const election = JSON.parse(electionData);
+  election.candidates = (election.candidates || []).filter(c => c.candidateId !== candidateId);
+  await env.MEMBERS_KV.put(`election:${electionId}`, JSON.stringify(election));
+
+  return jsonResponse({ success: true, election: publicElectionView(election) }, 200, corsHeaders);
+}
+
+async function handleCloseElection(request, env, corsHeaders, electionId) {
+  const adminAuth = await ensureAdmin(request, env, corsHeaders);
+  if (adminAuth.error) return adminAuth.error;
+
+  const body = await request.json().catch(() => ({}));
+  const electionData = await env.MEMBERS_KV.get(`election:${electionId}`);
+  if (!electionData) {
+    return jsonResponse({ error: 'Election not found' }, 404, corsHeaders);
+  }
+  const election = JSON.parse(electionData);
+  election.status = body.status || 'closed';
+  if (election.status === 'closed') {
+    election.endDate = election.endDate || new Date().toISOString();
+  }
+  await env.MEMBERS_KV.put(`election:${electionId}`, JSON.stringify(election));
+
+  return jsonResponse({ success: true, election: publicElectionView(election) }, 200, corsHeaders);
+}
+
+async function handleDeleteElection(request, env, corsHeaders, electionId) {
+  const adminAuth = await ensureAdmin(request, env, corsHeaders);
+  if (adminAuth.error) return adminAuth.error;
+
+  await env.MEMBERS_KV.delete(`election:${electionId}`);
+
+  return jsonResponse({ success: true, message: 'Election deleted' }, 200, corsHeaders);
+}
+
+async function resolveElectionVoterStatus(env, election, token) {
+  const base = { hasVoted: false, canVote: false, reason: 'auth_required', memberId: null, candidateId: null, status: '' };
+
+  if (!token) {
+    return base;
+  }
+
+  const memberId = await env.MEMBERS_KV.get(`token:${token}`);
+  if (!memberId) {
+    return base;
+  }
+
+  const memberData = await env.MEMBERS_KV.get(`member:${memberId}`);
+  let member = null;
+  if (memberData) {
+    try {
+      member = JSON.parse(memberData);
+    } catch (err) {
+      member = null;
+    }
+  }
+
+  const votes = election.votes || [];
+  const myVote = votes.find(v => v.memberId === memberId) || null;
+
+  const isMember = !!member && member.role === 'member';
+  const now = new Date().toISOString();
+  const withinWindow = (!election.startDate || now >= election.startDate) && (!election.endDate || now <= election.endDate);
+
+  const status = member ? (member.status || 'pending') : '';
+  const baseStatus = { ...base, status };
+
+  if (!isMember) {
+    return { ...baseStatus, reason: 'not_a_member' };
+  }
+
+  if (election.status !== 'open') {
+    return {
+      ...baseStatus,
+      hasVoted: !!myVote,
+      canVote: false,
+      reason: election.status === 'closed' ? 'voting_closed' : 'not_open',
+      candidateId: myVote ? myVote.candidateId : null,
+    };
+  }
+
+  if (!withinWindow) {
+    return {
+      ...baseStatus,
+      hasVoted: !!myVote,
+      canVote: false,
+      reason: now < (election.startDate || '') ? 'not_started' : 'voting_closed',
+      candidateId: myVote ? myVote.candidateId : null,
+    };
+  }
+
+  if (myVote) {
+    return { ...baseStatus, hasVoted: true, canVote: false, reason: 'already_voted', candidateId: myVote.candidateId };
+  }
+
+  return { ...baseStatus, hasVoted: false, canVote: true, reason: 'eligible' };
+}
+
+async function handleVote(request, env, corsHeaders) {
+  const url = new URL(request.url);
+  const segments = url.pathname.split('/').filter(Boolean);
+  const electionId = segments[2] || '';
+  const electionData = await env.MEMBERS_KV.get(`election:${electionId}`);
+  if (!electionData) {
+    return jsonResponse({ error: 'Election not found' }, 404, corsHeaders);
+  }
+  const election = JSON.parse(electionData);
+  const body = await request.json();
+  const candidateId = body.candidateId;
+
+  const voterStatus = await resolveElectionVoterStatus(env, election, url.searchParams.get('token'));
+  if (voterStatus.reason === 'auth_required') {
+    return jsonResponse({ error: 'Authentication required' }, 401, corsHeaders);
+  }
+  if (voterStatus.reason === 'not_a_member') {
+    return jsonResponse({ error: 'Only registered members may vote in leadership elections' }, 403, corsHeaders);
+  }
+  if (voterStatus.reason === 'already_voted') {
+    return jsonResponse({ error: 'You have already voted in this election' }, 409, corsHeaders);
+  }
+  if (voterStatus.reason === 'not_open') {
+    return jsonResponse({ error: 'Voting is not open for this election' }, 400, corsHeaders);
+  }
+  if (voterStatus.reason === 'not_started') {
+    return jsonResponse({ error: 'Voting has not started for this election yet' }, 400, corsHeaders);
+  }
+  if (voterStatus.reason === 'voting_closed') {
+    return jsonResponse({ error: 'Voting is closed for this election' }, 400, corsHeaders);
+  }
+
+  const candidate = (election.candidates || []).find(c => c.candidateId === candidateId);
+  if (!candidate) {
+    return jsonResponse({ error: 'Candidate not found' }, 400, corsHeaders);
+  }
+
+  election.votes = election.votes || [];
+  election.votes.push({ memberId: voterStatus.memberId, candidateId, votedAt: new Date().toISOString() });
+  await env.MEMBERS_KV.put(`election:${electionId}`, JSON.stringify(election));
+
+  const tally = computeElectionTally(election);
+  return jsonResponse({ success: true, message: 'Vote recorded', tally, election: publicElectionView(election) }, 200, corsHeaders);
 }

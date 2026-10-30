@@ -199,6 +199,11 @@
           Notifications
           <span class="admin-tab-count" id="tabNotifCount">0</span>
         </button>
+        <button class="admin-tab" data-tab="elections" onclick="switchAdminTab('elections')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Elections
+          <span class="admin-tab-count" id="adminElecCount">0</span>
+        </button>
       </div>
 
       <!-- Tab: Registrations -->
@@ -320,6 +325,108 @@
               <tr><td colspan="6" class="admin-empty-cell">Loading notifications...</td></tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- Tab: Elections -->
+      <div class="admin-tab-content" id="adminTabElections">
+        <div class="admin-panel-card">
+          <div class="admin-panel-header">
+            <h4>Create Leadership Election</h4>
+            <span class="admin-pill">Governance</span>
+          </div>
+          <form id="adminElectionForm" onsubmit="adminCreateElection(event)" style="padding:20px;">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="adminElectionPosition">Position *</label>
+                <select id="adminElectionPosition" required>
+                  <option value="" disabled selected>Select position</option>
+                  <option value="board-chairperson">Board Chairperson</option>
+                  <option value="vice-chairperson">Vice Chairperson</option>
+                  <option value="secretary">Secretary</option>
+                  <option value="treasurer">Treasurer</option>
+                  <option value="ceo">CEO / Manager</option>
+                  <option value="pr-manager">Public Relations Manager</option>
+                  <option value="financial-advisor">SACCO Financial Advisor</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="adminElectionStatus">Status</label>
+                <select id="adminElectionStatus">
+                  <option value="draft">Draft</option>
+                  <option value="open">Open</option>
+                  <option value="closed">Closed</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="adminElectionTitle">Title</label>
+              <input type="text" id="adminElectionTitle" placeholder="e.g. Treasurer Election 2026" />
+            </div>
+            <div class="form-group">
+              <label for="adminElectionDescription">Description</label>
+              <textarea id="adminElectionDescription" rows="2" placeholder="Describe the election mandate..."></textarea>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="adminElectionStartDate">Voting starts</label>
+                <input type="datetime-local" id="adminElectionStartDate" />
+              </div>
+              <div class="form-group">
+                <label for="adminElectionEndDate">Voting ends</label>
+                <input type="datetime-local" id="adminElectionEndDate" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="adminElectionCandidateName">Initial candidate name</label>
+              <input type="text" id="adminElectionCandidateName" placeholder="Candidate full name" />
+            </div>
+            <div class="form-group">
+              <label for="adminElectionCandidateImage">Initial candidate image URL</label>
+              <input type="url" id="adminElectionCandidateImage" placeholder="https://example.com/candidate.jpg" />
+            </div>
+            <div class="form-group">
+              <label for="adminElectionCandidateBio">Initial candidate bio</label>
+              <textarea id="adminElectionCandidateBio" rows="2"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Create Election</button>
+          </form>
+        </div>
+
+        <div class="admin-panel-card" style="margin-top:20px;">
+          <div class="admin-panel-header">
+            <h4>Elections</h4>
+            <span class="admin-pill">Governance</span>
+          </div>
+          <div id="adminElectionsList" class="admin-list"></div>
+        </div>
+
+        <div class="admin-panel-card" style="margin-top:20px;">
+          <div class="admin-panel-header">
+            <h4>Add Candidate</h4>
+            <span class="admin-pill">Governance</span>
+          </div>
+          <form id="adminCandidateForm" onsubmit="adminAddCandidate(event)" style="padding:20px;">
+            <div class="form-group">
+              <label for="adminElectionCandidateSelect">Election *</label>
+              <select id="adminElectionCandidateSelect" required>
+                <option value="" disabled selected>Select election</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="adminCandidateName">Candidate name *</label>
+              <input type="text" id="adminCandidateName" placeholder="Candidate full name" required />
+            </div>
+            <div class="form-group">
+              <label for="adminCandidateImage">Candidate image URL</label>
+              <input type="url" id="adminCandidateImage" placeholder="https://example.com/candidate.jpg" />
+            </div>
+            <div class="form-group">
+              <label for="adminCandidateBio">Candidate bio</label>
+              <textarea id="adminCandidateBio" rows="2"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Candidate</button>
+          </form>
         </div>
       </div>
     </div>

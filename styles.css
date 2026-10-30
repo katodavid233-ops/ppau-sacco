@@ -1073,6 +1073,261 @@ img {
   line-height: 1.5;
 }
 
+/* ===== LEADERSHIP ELECTIONS ===== */
+.elections-intro {
+  max-width: 760px;
+  margin: 0 auto 32px;
+  text-align: center;
+  color: var(--gray-600);
+  line-height: 1.6;
+}
+
+.elections-list {
+  display: grid;
+  gap: 24px;
+}
+
+.election-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-100);
+  box-shadow: var(--shadow-sm);
+  padding: 28px;
+}
+
+.election-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.election-card-header h4 {
+  font-size: clamp(1.15rem, 1.4vw + 0.7rem, 1.5rem);
+  font-weight: 800;
+  color: var(--gray-900);
+  margin: 2px 0 6px;
+}
+
+.election-card-header p {
+  color: var(--gray-600);
+  line-height: 1.55;
+  margin-top: 0;
+}
+
+.election-position {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--green-700);
+}
+
+.election-status {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.election-status.open {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.election-status.closed {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.election-status.draft {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.election-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  color: var(--gray-500);
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+}
+
+.election-candidates {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.election-candidate {
+  border: 1px solid var(--gray-100);
+  border-radius: var(--radius-md, 12px);
+  padding: 20px;
+  text-align: center;
+  background: #fbfdfb;
+}
+
+.election-candidate-avatar {
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--green-800), var(--green-600));
+}
+
+.election-candidate-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.election-candidate-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-weight: 700;
+  color: var(--white);
+  font-size: 1.6rem;
+}
+
+.election-candidate h5 {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 4px;
+}
+
+.election-candidate p {
+  font-size: 0.82rem;
+  color: var(--gray-600);
+  line-height: 1.45;
+  margin-bottom: 8px;
+}
+
+.election-vote-count {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--gray-500);
+  margin-bottom: 10px;
+}
+
+.election-vote-state {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--green-700);
+}
+
+.election-empty {
+  text-align: center;
+  color: var(--gray-500);
+  padding: 20px;
+}
+
+.elections-empty {
+  background: var(--white);
+  border: 1px dashed var(--gray-100);
+  border-radius: var(--radius-lg);
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--gray-500);
+}
+
+.elections-empty svg {
+  color: var(--green-700);
+  margin-bottom: 12px;
+}
+
+.elections-empty p {
+  margin: 0 0 6px;
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+.elections-empty-sub {
+  font-size: 0.85rem;
+  font-weight: 400 !important;
+  color: var(--gray-500) !important;
+}
+
+.election-results {
+  margin-top: 24px;
+  border-top: 1px solid var(--gray-100);
+  padding-top: 20px;
+}
+
+.election-results h5 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 14px;
+}
+
+.election-result-row {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.election-result-info {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.election-result-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.election-result-meta {
+  font-size: 0.8rem;
+  color: var(--gray-500);
+}
+
+.election-result-bar {
+  height: 10px;
+  background: var(--gray-100);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.election-result-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green-800), var(--green-600));
+  border-radius: 999px;
+  min-width: 0;
+}
+
+.election-result-total {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: var(--gray-500);
+}
+
+/* ===== RESPONSIVE - ELECTIONS ===== */
+@media (max-width: 768px) {
+  .election-result-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+}
+
 /* ===== NEWS ===== */
 .news-grid {
   display: grid;

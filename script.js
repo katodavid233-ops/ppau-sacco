@@ -458,6 +458,34 @@ function demoApiCall(endpoint, method, body) {
     return Promise.resolve({ payments: [] });
   }
 
+  // Elections
+  if (endpoint === '/api/elections') {
+    return Promise.resolve({ elections: [] });
+  }
+
+  if (endpoint.startsWith('/api/elections/')) {
+    const electionParts = endpoint.split('/').filter(Boolean);
+    const electionId = electionParts[2];
+    if (electionParts[3] === 'vote') {
+      const stored = JSON.parse(localStorage.getItem('ppau_demo_members') || 'null');
+      const votes = JSON.parse(localStorage.getItem('ppau_demo_election_votes') || '{}');
+      if (votes[electionId]) throw new Error('You have already voted in this election.');
+      if (!stored) throw new Error('Please sign in to vote in elections.');
+      votes[electionId] = body?.candidateId || 'c1';
+      localStorage.setItem('ppau_demo_election_votes', JSON.stringify(votes));
+      return Promise.resolve({ success: true, message: 'Vote submitted', tally: [{ candidateId: votes[electionId], name: 'Demo Candidate', votes: 1, percentage: 100 }] });
+    }
+    return Promise.resolve({ success: true, election: null, voterStatus: null, tally: [] });
+  }
+
+  if (endpoint === '/api/admin/elections') {
+    return Promise.resolve({ elections: [] });
+  }
+
+  if (endpoint.startsWith('/api/admin/elections/')) {
+    return Promise.resolve({ success: true, election: null, elections: [] });
+  }
+
   // Flutterwave init
   if (endpoint === '/api/payment/flutterwave/initialize') {
     throw new Error('Card payments require the live backend. Please use bank transfer, Airtel Money, or MTN MoMo.');
@@ -813,6 +841,7 @@ function showDashboard() {
 
   // Fetch latest data from API
   fetchMemberData();
+  loadMemberElections();
 }
 
 // Fetch member data from API
@@ -1688,6 +1717,10 @@ async function loadAdminData() {
     renderPaymentsTable(allPayments);
     renderAllMembersTable(allMembers);
     loadAdminNotifications();
+
+    if (currentAdminTab === 'elections') {
+      loadAdminElections();
+    }
   } catch (err) {
     showAdminToast(err.message || 'Could not load admin data.', 'error');
   }
@@ -1703,6 +1736,7 @@ function switchAdminTab(tab) {
   if (tab === 'payments') document.getElementById('adminTabPayments')?.classList.add('active');
   if (tab === 'allmembers') document.getElementById('adminTabAllMembers')?.classList.add('active');
   if (tab === 'notifications') document.getElementById('adminTabNotifications')?.classList.add('active');
+  if (tab === 'elections') document.getElementById('adminTabElections')?.classList.add('active');
 }
 
 function handleAdminSearch() {
@@ -2133,6 +2167,11 @@ if (document.getElementById('notifBell')) {
   loadHomepageNotifications();
 }
 
+// Initialize leadership elections on homepage
+if (document.getElementById('electionsList')) {
+  loadElections();
+}
+
 // ==================================================================
 // ADMIN NOTIFICATION MANAGEMENT
 // ==================================================================
@@ -2241,5 +2280,345 @@ async function adminToggleNotification(notifId) {
     loadAdminNotifications();
   } catch (err) {
     showAdminToast(err.message || 'Could not update notification.', 'error');
+  }
+}
+
+// ==================================================================
+// LEADERSHIP ELECTIONS
+// ==================================================================
+
+const LEADERSHIP_POSITIONS = [
+  { id: 'board-chairperson', positionId: 'board-chairperson', title: 'Board Chairperson' },
+  { id: 'vice-chairperson', positionId: 'vice-chairperson', title: 'Vice Chairperson' },
+  { id: 'secretary', positionId: 'secretary', title: 'Secretary' },
+  { id: 'treasurer', positionId: 'treasurer', title: 'Treasurer' },
+  { id: 'ceo', positionId: 'ceo', title: 'CEO / Manager' },
+  { id: 'pr-manager', positionId: 'pr-manager', title: 'Public Relations Manager' },
+  { id: 'financial-advisor', positionId: 'financial-advisor', title: 'SACCO Financial Advisor' },
+];
+
+async function fetchElections(token) {
+  const listResult = await apiCall('/api/elections');
+  const items = listResult.elections || [];
+  const elections = [];
+
+  for (const item of items) {
+    let election = item;
+    let voterStatus = item.voterStatus || null;
+
+    if (token && item.status === 'open') {
+      try {
+        const detail = await apiCall(`/api/elections/${item.id}?token=${token}`);
+        election = detail.election || item;
+        voterStatus = detail.voterStatus || null;
+      } catch (err) {
+        // Keep the public view if the detail lookup fails
+      }
+    }
+
+    elections.push({ ...election, voterStatus });
+  }
+
+  return elections;
+}
+
+function escapeElectionHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function electionStatusLabel(status) {
+  if (status === 'open') return 'Open';
+  if (status === 'closed') return 'Closed';
+  return 'Draft';
+}
+
+function renderElectionCard(election) {
+  const status = election.status || 'draft';
+  const canVote = !!(election.voterStatus && election.voterStatus.canVote);
+  const hasVoted = !!(election.voterStatus && election.voterStatus.hasVoted);
+  const tally = election.tally || { candidates: [], totalVotes: 0 };
+  const candidates = (election.candidates || []).slice().sort((a, b) => (b.votes || 0) - (a.votes || 0));
+  const resultsVisible = status === 'closed' || hasVoted || !canVote;
+
+  const candidatesHtml = candidates.length
+    ? candidates.map(c => {
+      const canVoteHere = status === 'open' && canVote && !hasVoted;
+      const voteState = hasVoted && election.voterStatus && c.candidateId === election.voterStatus.candidateId
+        ? '<span class="election-vote-state">✓ Your vote</span>'
+        : status === 'closed'
+          ? '<span class="election-vote-state">—</span>'
+          : '<span class="election-vote-state">Voting open</span>';
+      const voteBtn = canVoteHere
+        ? `<button type="button" class="btn btn-primary btn-sm election-vote-btn" onclick="castElectionVote('${escapeElectionHtml(election.id)}', '${escapeElectionHtml(c.candidateId)}')">Vote</button>`
+        : voteState;
+      return `
+        <div class="election-candidate">
+          <div class="election-candidate-avatar">
+            ${c.image
+              ? `<img src="${escapeElectionHtml(c.image)}" alt="${escapeElectionHtml(c.name)}" loading="lazy" />`
+              : `<span class="election-candidate-initials">${escapeElectionHtml((c.name || '').split(' ').map(w => w[0]).join('').slice(0, 2)).toUpperCase()}</span>`}
+          </div>
+          <h5>${escapeElectionHtml(c.name)}</h5>
+          ${c.bio ? `<p>${escapeElectionHtml(c.bio)}</p>` : ''}
+          <span class="election-vote-count">${c.votes || 0} vote(s)</span>
+          ${voteBtn}
+        </div>`;
+    }).join('')
+    : '<p class="election-empty">No candidates have been nominated yet.</p>';
+
+  const resultsHtml = resultsVisible && tally.candidates && tally.candidates.length
+    ? `
+      <div class="election-results">
+        <h5>Results</h5>
+        ${tally.candidates.map(c => `
+          <div class="election-result-row">
+            <div class="election-result-info">
+              <span class="election-result-name">${escapeElectionHtml(c.name)}</span>
+              <span class="election-result-meta">${c.votes} vote(s)${c.percentage ? ` • ${c.percentage}%` : ''}</span>
+            </div>
+            <div class="election-result-bar">
+              <div class="election-result-fill" style="width:${c.percentage || 0}%"></div>
+            </div>
+          </div>`).join('')}
+        ${tally.totalVotes ? `<div class="election-result-total">${tally.totalVotes} total vote(s) cast</div>` : ''}
+      </div>`
+    : '';
+
+  const opensLabel = election.startDate ? `Opens ${new Date(election.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : '';
+  const closesLabel = election.endDate ? `Closes ${new Date(election.endDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : '';
+
+  return `
+    <div class="election-card" data-election-id="${escapeElectionHtml(election.id)}">
+      <div class="election-card-header">
+        <div>
+          <span class="election-position">${escapeElectionHtml(election.position || '')}</span>
+          <h4>${escapeElectionHtml(election.title || election.position || 'Leadership Election')}</h4>
+          ${election.description ? `<p>${escapeElectionHtml(election.description)}</p>` : ''}
+        </div>
+        <span class="election-status ${status}">${electionStatusLabel(status)}</span>
+      </div>
+      <div class="election-card-meta">
+        ${opensLabel ? `<span>${opensLabel}</span>` : ''}
+        ${closesLabel ? `<span>${closesLabel}</span>` : ''}
+        <span>${election.totalVotes || 0} vote(s) cast</span>
+      </div>
+      <div class="election-candidates">${candidatesHtml}</div>
+      ${resultsHtml}
+    </div>`;
+
+}
+
+function renderElections(containerId, elections) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  if (!elections || !elections.length) {
+    container.innerHTML = `
+      <div class="elections-empty">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <p>No leadership elections are currently open.</p>
+        <p class="elections-empty-sub">Elections for PPAU SACCO leadership positions will be listed here as they are called.</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = elections.map(e => renderElectionCard(e)).join('');
+}
+
+async function loadElections() {
+  const container = document.getElementById('electionsList');
+  if (!container) return;
+
+  const token = localStorage.getItem('ppau_token');
+  try {
+    const elections = await fetchElections(token);
+    renderElections('electionsList', elections);
+  } catch (err) {
+    container.innerHTML = `<div class="elections-empty"><p>Unable to load elections right now.</p></div>`;
+  }
+}
+
+async function loadMemberElections() {
+  const container = document.getElementById('dashElectionsList');
+  if (!container) return;
+
+  const token = localStorage.getItem('ppau_token');
+  try {
+    const elections = await fetchElections(token);
+    renderElections('dashElectionsList', elections);
+  } catch (err) {
+    container.innerHTML = `<div class="elections-empty"><p>Unable to load elections right now.</p></div>`;
+  }
+}
+
+async function castElectionVote(electionId, candidateId) {
+  const token = localStorage.getItem('ppau_token');
+  if (!token) {
+    showPortalNotification('Please sign in to vote in leadership elections.', 'error');
+    return;
+  }
+
+  try {
+    const res = await apiCall(`/api/elections/${electionId}/vote?token=${token}`, 'POST', { candidateId });
+    showPortalNotification('Your vote was recorded successfully!', 'success');
+    const elections = await fetchElections(token);
+    renderElections('electionsList', elections);
+    renderElections('dashElectionsList', elections);
+  } catch (err) {
+    showPortalNotification(err.message || 'Vote failed. Please try again.', 'error');
+  }
+}
+
+// ===== ADMIN: LEADERSHIP ELECTIONS =====
+
+async function loadAdminElections() {
+  const token = localStorage.getItem('ppau_admin_token');
+  const container = document.getElementById('adminElectionsList');
+  if (!token || !container) return;
+
+  try {
+    const data = await apiCall(`/api/admin/elections?token=${token}`);
+    const elections = data.elections || [];
+    const countEl = document.getElementById('adminElecCount');
+    if (countEl) countEl.textContent = elections.length;
+
+    const select = document.getElementById('adminElectionCandidateSelect');
+    if (select) {
+      select.innerHTML = '<option value="" disabled selected>Select election</option>';
+      for (const el of elections) {
+        const opt = document.createElement('option');
+        opt.value = el.id;
+        opt.textContent = `${el.position ? `${el.position} — ` : ''}${el.title || 'Leadership Election'}`;
+        select.appendChild(opt);
+      }
+    }
+
+    renderAdminElections(elections);
+  } catch (err) {
+    container.innerHTML = `<div class="elections-empty"><p>Unable to load elections.</p></div>`;
+  }
+}
+
+function renderAdminElections(elections) {
+  const container = document.getElementById('adminElectionsList');
+  if (!container) return;
+
+  if (!elections || !elections.length) {
+    container.innerHTML = `<div class="elections-empty"><p>No leadership elections have been created yet.</p></div>`;
+    return;
+  }
+
+  container.innerHTML = elections.map(e => renderAdminElectionCard(e)).join('');
+}
+
+function renderAdminElectionCard(e) {
+  const candidatesHtml = (e.candidates || []).map(c => `
+    <div class="admin-item">
+      <h5>${escapeElectionHtml(c.name)}</h5>
+      <p>${c.votes || 0} vote(s)</p>
+    </div>`).join('');
+
+  const actions = e.status === 'open'
+    ? `<button class="btn btn-outline-dark btn-sm" onclick="adminSetElectionStatus('${e.id}', 'closed')">Close Voting</button>`
+    : `<button class="btn btn-primary btn-sm" onclick="adminSetElectionStatus('${e.id}', 'open')">Open Voting</button>`;
+  actions += ` <button class="btn btn-danger btn-sm" onclick="adminDeleteElection('${e.id}')">Delete</button>`;
+
+  return `
+    <div class="admin-item" data-election-id="${e.id}">
+      <h5>${escapeElectionHtml(e.position || '')} — ${escapeElectionHtml(e.title || '')}</h5>
+      <p>Status: <span class="admin-pill">${e.status}</span> • Total votes: ${e.totalVotes || 0} • Candidates: ${(e.candidates || []).length}</p>
+      <div class="admin-item-actions">${actions}</div>
+      ${candidatesHtml}
+    </div>`;
+}
+
+async function adminSetElectionStatus(electionId, status) {
+  const token = localStorage.getItem('ppau_admin_token');
+  if (!token) return;
+
+  try {
+    await apiCall(`/api/admin/elections/${electionId}/close?token=${token}`, 'POST', { status });
+    showAdminToast('Election status updated.', 'success');
+    loadAdminElections();
+  } catch (err) {
+    showAdminToast(err.message || 'Could not update election.', 'error');
+  }
+}
+
+async function adminDeleteElection(electionId) {
+  const token = localStorage.getItem('ppau_admin_token');
+  if (!token) return;
+
+  try {
+    await apiCall(`/api/admin/elections/${electionId}/delete?token=${token}`, 'POST');
+    showAdminToast('Election deleted.', 'success');
+    loadAdminElections();
+  } catch (err) {
+    showAdminToast(err.message || 'Could not delete election.', 'error');
+  }
+}
+
+async function adminCreateElection(e) {
+  if (e && e.preventDefault) e.preventDefault();
+
+  const positionId = document.getElementById('adminElectionPosition')?.value || '';
+  const title = document.getElementById('adminElectionTitle')?.value.trim();
+  const description = document.getElementById('adminElectionDescription')?.value.trim();
+  const status = document.getElementById('adminElectionStatus')?.value || 'draft';
+  const startDate = document.getElementById('adminElectionStartDate')?.value;
+  const endDate = document.getElementById('adminElectionEndDate')?.value;
+  const candidateName = document.getElementById('adminElectionCandidateName')?.value.trim();
+  const candidateImage = document.getElementById('adminElectionCandidateImage')?.value.trim();
+  const candidateBio = document.getElementById('adminElectionCandidateBio')?.value.trim();
+
+  const body = {
+    positionId,
+    title,
+    description,
+    status,
+    startDate: startDate ? new Date(startDate).toISOString() : null,
+    endDate: endDate ? new Date(endDate).toISOString() : null,
+    candidateName,
+    candidateImage,
+    candidateBio,
+  };
+
+  try {
+    const res = await apiCall('/api/admin/elections', 'POST', body);
+    showAdminToast('Election created successfully.', 'success');
+    const form = document.getElementById('adminElectionForm');
+    if (form) form.reset();
+    loadAdminElections();
+  } catch (err) {
+    showAdminToast(err.message || 'Could not create election.', 'error');
+  }
+}
+
+async function adminAddCandidate(e) {
+  if (e && e.preventDefault) e.preventDefault();
+
+  const electionId = document.getElementById('adminElectionCandidateSelect')?.value;
+  const name = document.getElementById('adminCandidateName')?.value.trim();
+  const image = document.getElementById('adminCandidateImage')?.value.trim();
+  const bio = document.getElementById('adminCandidateBio')?.value.trim();
+
+  if (!electionId || !name) {
+    showAdminToast('Please select an election and enter a candidate name.', 'error');
+    return;
+  }
+
+  try {
+    const res = await apiCall(`/api/admin/elections/${electionId}/candidates`, 'POST', { name, image, bio });
+    showAdminToast('Candidate added.', 'success');
+    const form = document.getElementById('adminCandidateForm');
+    if (form) form.reset();
+    loadAdminElections();
+  } catch (err) {
+    showAdminToast(err.message || 'Could not add candidate.', 'error');
   }
 }

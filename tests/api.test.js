@@ -80,7 +80,56 @@ async function main() {
   });
   assert.strictEqual(adminVerifyResult.response.status, 200, 'Admin payment verification should succeed');
 
-  console.log('API registration, admin approval, and payment verification flow verified successfully.');
+  const adminElectionsResult = await request(`/api/admin/elections?token=${adminLoginResult.body.token}`);
+  assert.strictEqual(adminElectionsResult.response.status, 200, 'Admin election list endpoint should work');
+
+  const electionCreateResult = await request('/api/admin/elections', {
+    method: 'POST',
+    body: JSON.stringify({
+      positionId: 'treasurer',
+      title: 'Treasurer Election Test',
+      description: 'Member vote for the Treasurer position',
+      status: 'open',
+      startDate: new Date(Date.now() - 86400000).toISOString(),
+      endDate: new Date(Date.now() + (86400000 * 30)).toISOString(),
+      candidateName: 'Test Candidate',
+      candidateImage: '',
+      candidateBio: 'Test bio',
+    }),
+  });
+
+  assert.strictEqual(electionCreateResult.response.status, 201, 'Election creation should succeed');
+  const electionId = electionCreateResult.body.election?.id;
+  const candidateId = electionCreateResult.body.election?.candidates?.[0]?.candidateId;
+  assert.ok(electionId, 'Election creation should return an electionId');
+  assert.ok(candidateId, 'Election creation should return a candidateId');
+
+  const electionVoteResult = await request(`/api/elections/${electionId}/vote?token=${registerResult.body.token}`, {
+    method: 'POST',
+    body: JSON.stringify({ candidateId }),
+  });
+
+  assert.strictEqual(electionVoteResult.response.status, 200, 'Member election vote should succeed');
+
+  const electionDetailResult = await request(`/api/elections/${electionId}?token=${registerResult.body.token}`);
+  assert.strictEqual(electionDetailResult.response.status, 200, 'Election detail lookup should work');
+  assert.strictEqual(electionDetailResult.body.voterStatus?.hasVoted, true, 'Member should have voted in the election');
+  assert.strictEqual(electionDetailResult.body.tally?.totalVotes, 1, 'Election tally should count cast votes');
+
+  const duplicateElectionVoteResult = await request(`/api/elections/${electionId}/vote?token=${registerResult.body.token}`, {
+    method: 'POST',
+    body: JSON.stringify({ candidateId }),
+  });
+
+  assert.strictEqual(duplicateElectionVoteResult.response.status, 409, 'Duplicate election votes should be rejected');
+
+  const adminDeleteElectionResult = await request(`/api/admin/elections/${electionId}/delete?token=${adminLoginResult.body.token}`, {
+    method: 'POST',
+  });
+
+  assert.strictEqual(adminDeleteElectionResult.response.status, 200, 'Admin election delete should succeed');
+
+  console.log('API registration, admin approval, payment verification, and election flow verified successfully.');
 }
 
 main().catch((error) => {

@@ -2439,7 +2439,7 @@ async function loadElections() {
     const elections = await fetchElections(token);
     renderElections('electionsList', elections);
   } catch (err) {
-    container.innerHTML = `<div class="elections-empty"><p>Unable to load elections right now.</p></div>`;
+    container.innerHTML = `<div class="elections-empty"><p>Unable to load elections right now. ${err?.message || ''}</p></div>`;
   }
 }
 
@@ -2452,7 +2452,7 @@ async function loadMemberElections() {
     const elections = await fetchElections(token);
     renderElections('dashElectionsList', elections);
   } catch (err) {
-    container.innerHTML = `<div class="elections-empty"><p>Unable to load elections right now.</p></div>`;
+    container.innerHTML = `<div class="elections-empty"><p>Unable to load elections right now. ${err?.message || ''}</p></div>`;
   }
 }
 
